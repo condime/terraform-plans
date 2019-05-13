@@ -1,22 +1,25 @@
-resource "github_repository" "terraform-plans" {
-  name = "terraform-plans"
+# Meta repository, manages itself!
+resource "github_repository" "meta-terraform-plans" {
+  name = "meta-terraform-plans"
 
-  has_issues   = true 
+  has_issues   = true
   has_projects = false
   has_wiki     = false
 
   allow_merge_commit = false
-  allow_squash_merge = true
-  allow_rebase_merge = true
+  allow_rebase_merge = false
+  allow_squash_merge = false
 }
 
-resource "github_branch_protection" "terraform-plans" {
-  repository = "${github_repository.terraform-plans.name}"
-  branch     = "master"
+# Main repository, put your cool stuff here.
+resource "github_repository" "terraform-plans" {
+  name = "terraform-plans"
 
-  enforce_admins = true
+  has_issues   = true
+  has_projects = false
+  has_wiki     = false
 
-  required_status_checks {
-    strict = true
-  }
+  allow_merge_commit = false
+  allow_rebase_merge = false
+  allow_squash_merge = false
 }
