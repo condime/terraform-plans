@@ -1,0 +1,77 @@
+name: 'Terraform'
+
+on:
+  push:
+    branches:
+    - production
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}      # Repository specific, contact @bencord0 to rotate
+  ARTIFACT_SECRET_KEY: ${{ secrets.ARTIFACT_SECRET_KEY }}  # Random, e.g. $(uuidgen); not stored, free to rotate at any time
+
+jobs:
+  terraform-plan:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: |
+        terraform plan -out ./tfplan.zip
+        openssl enc -pass env:ARTIFACT_SECRET_KEY -e -aes-256-ctr -pbkdf2 -in ./tfplan.zip -out tfplan.enc
+
+    # Saves the plan as an artifact
+    - name: Save Encrypted Plan
+      uses: actions/upload-artifact@v2
+      with:
+        name: terraform-plan
+        path: './tfplan.enc'
+        retention-days: 1
+
+  terraform-apply:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: production
+    needs: terraform-plan
+    if: github.ref == 'refs/heads/production'
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Retrieve the prepared plan
+    - name: Download Plan
+      uses: actions/download-artifact@v2
+      with:
+        name: terraform-plan
+        path: '.'
+
+    # Use openssl symmetric decryption, as github action artifacts are public
+    - name: Decrypt Archived Plan
+      run: |
+        openssl enc -pass env:ARTIFACT_SECRET_KEY -d -aes-256-ctr -pbkdf2 -in ./tfplan.enc -out tfplan.zip
+
+    # Terraform init (again), reload the providers
+    - name: Terraform Init
+      run: terraform init
+
+    # On push to production or manual change reset infrastructure according to Terraform configuration files
+    - name: Terraform Apply
+      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      run: terraform apply ./tfplan.zip
