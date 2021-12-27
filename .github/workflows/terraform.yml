@@ -11,6 +11,10 @@ env:
   CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}      # Repository specific, contact @bencord0 to rotate
   ARTIFACT_SECRET_KEY: ${{ secrets.ARTIFACT_SECRET_KEY }}  # Random, e.g. $(uuidgen); not stored, free to rotate at any time
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   terraform-plan:
     name: 'Terraform Plan'
@@ -20,6 +24,18 @@ jobs:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       uses: actions/checkout@v2
+
+    # https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/
+    - name: Configure AWS Credentials
+      run: |
+        echo AWS_ROLE_ARN="arn:aws:iam::055237546114:role/terraform-plans" >> $GITHUB_ENV
+        echo AWS_WEB_IDENTITY_TOKEN_FILE=webidentity.json                  >> $GITHUB_ENV
+        echo AWS_DEFAULT_REGION=eu-west-2                                  >> $GITHUB_ENV
+        source $GITHUB_ENV
+
+        curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > webidentity.json
+
+    - run: aws sts get-caller-identity
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
