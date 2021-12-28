@@ -37,8 +37,8 @@ jobs:
     - name: Save Encrypted Plan
       uses: actions/upload-artifact@v2
       with:
-        name: terraform-plan
-        path: './tfplan.enc'
+        name: terraform-plan-${{ inputs.region }}
+        path: './tfplan-${{ inputs.region }}.enc'
         retention-days: 1
 
   terraform-apply:
@@ -57,7 +57,7 @@ jobs:
     - name: Download Plan
       uses: actions/download-artifact@v2
       with:
-        name: terraform-plan
+        name: terraform-plan-${{ inputs.region }}
         path: '.'
 
     - name: Configure AWS Credentials

@@ -21,4 +21,4 @@ terraform plan -out ./tfplan.zip
 # Encrypt the plan with a random key
 openssl enc -pass env:ARTIFACT_SECRET_KEY \
     -e -aes-256-ctr -pbkdf2 \
-    -in ./tfplan.zip -out ../tfplan.enc
+    -in ./tfplan.zip -out "../tfplan-${AWS_DEFAULT_REGION}.enc"

@@ -6,10 +6,15 @@ if [ -z "${ARTIFACT_SECRET_KEY}" ]; then
     exit 1
 fi
 
+pushd "${AWS_DEFAULT_REGION}"
+
 # Decrypt the plan
 openssl enc -pass env:ARTIFACT_SECRET_KEY \
     -d -aes-256-ctr -pbkdf2 \
-    -in ../tfplan.enc -out tfplan.zip
+    -in "../tfplan-${AWS_DEFAULT_REGION}.enc" -out tfplan.zip
+
+# Download dependencies
+terraform init
 
 # Execute the saved plan
 terraform apply ./tfplan.zip
