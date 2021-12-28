@@ -1,0 +1,69 @@
+name: "Terraform Run"
+
+on:
+  workflow_call:
+    inputs:
+      region: { required: true, type: string }
+    secrets:
+      CONSUL_HTTP_TOKEN: { required: true }
+      ARTIFACT_SECRET_KEY: { required: true }
+
+env:
+  CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}      # Repository specific, contact @bencord0 to rotate
+  ARTIFACT_SECRET_KEY: ${{ secrets.ARTIFACT_SECRET_KEY }}  # Random, e.g. $(uuidgen); not stored, free to rotate at any time
+  AWS_DEFAULT_REGION: ${{ inputs.region }}
+
+permissions:
+  id-token: write
+
+jobs:
+  terraform-plan:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS Credentials
+      run: |
+        ./scripts/setup_aws_credentials.py \
+          --role "arn:aws:iam::055237546114:role/terraform-plans-ro"
+
+    - name: Terraform Plan
+      run: ./scripts/terraform_plan.sh
+
+    # Saves the plan as an artifact
+    - name: Save Encrypted Plan
+      uses: actions/upload-artifact@v2
+      with:
+        name: terraform-plan
+        path: './tfplan.enc'
+        retention-days: 1
+
+  terraform-apply:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: production
+    needs: terraform-plan
+    if: github.ref == 'refs/heads/production'
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Retrieve the prepared plan
+    - name: Download Plan
+      uses: actions/download-artifact@v2
+      with:
+        name: terraform-plan
+        path: '.'
+
+    - name: Configure AWS Credentials
+      run: |
+        ./scripts/setup_aws_credentials.py \
+          --role "arn:aws:iam::055237546114:role/terraform-plans-ro"
+
+    - name: Terraform Apply
+      run: ./scripts/terraform_apply.sh
