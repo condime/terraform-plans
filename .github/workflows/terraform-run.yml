@@ -63,7 +63,7 @@ jobs:
     - name: Configure AWS Credentials
       run: |
         ./scripts/setup_aws_credentials.py \
-          --role "arn:aws:iam::055237546114:role/terraform-plans-ro"
+          --role "arn:aws:iam::055237546114:role/terraform-plans"
 
     - name: Terraform Apply
       run: ./scripts/terraform_apply.sh
