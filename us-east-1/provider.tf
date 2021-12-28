@@ -18,12 +18,12 @@ terraform {
   backend "consul" {
     address = "consul.condi.me"
     scheme  = "https"
-    path    = "condime/terraform_state"
+    path    = "condime/terraform_state/us-east-1"
   }
 }
 
 provider "aws" {
-  region = "eu-west-2"
+  region = "us-east-1"
 
   default_tags {
     tags = {
@@ -31,10 +31,3 @@ provider "aws" {
     }
   }
 }
-
-provider "consul" {
-  address = "consul.condi.me:443"
-  scheme  = "https"
-}
-
-provider "random" {}

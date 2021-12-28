@@ -7,95 +7,22 @@ on:
   pull_request:
   workflow_dispatch:
 
-env:
-  CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}      # Repository specific, contact @bencord0 to rotate
-  ARTIFACT_SECRET_KEY: ${{ secrets.ARTIFACT_SECRET_KEY }}  # Random, e.g. $(uuidgen); not stored, free to rotate at any time
-
 permissions:
   id-token: write
-  contents: read
 
 jobs:
-  terraform-plan:
-    name: 'Terraform Plan'
-    runs-on: ubuntu-latest
+  eu-west-2:
+    uses: condime/terraform-plans/.github/workflows/terraform-run.yml@production
+    with:
+      region: eu-west-2
+    secrets:
+      CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}
+      ARTIFACT_SECRET_KEY: ${{ secrets.ARTIFACT_SECRET_KEY }}
 
-    steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    # https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/
-    - name: Configure AWS Credentials
-      run: |
-        echo AWS_ROLE_ARN="arn:aws:iam::055237546114:role/terraform-plans-ro" >> $GITHUB_ENV
-        echo AWS_WEB_IDENTITY_TOKEN_FILE=webidentity.json                     >> $GITHUB_ENV
-        echo AWS_DEFAULT_REGION=eu-west-2                                     >> $GITHUB_ENV
-        source $GITHUB_ENV
-
-        curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > webidentity.json
-
-    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-    - name: Terraform Init
-      run: terraform init
-
-    # Checks that all Terraform configuration files adhere to a canonical format
-    - name: Terraform Format
-      run: terraform fmt -check
-
-    # Generates an execution plan for Terraform
-    - name: Terraform Plan
-      run: |
-        terraform plan -out ./tfplan.zip
-        openssl enc -pass env:ARTIFACT_SECRET_KEY -e -aes-256-ctr -pbkdf2 -in ./tfplan.zip -out tfplan.enc
-
-    # Saves the plan as an artifact
-    - name: Save Encrypted Plan
-      uses: actions/upload-artifact@v2
-      with:
-        name: terraform-plan
-        path: './tfplan.enc'
-        retention-days: 1
-
-  terraform-apply:
-    name: 'Terraform Apply'
-    runs-on: ubuntu-latest
-    environment: production
-    needs: terraform-plan
-    if: github.ref == 'refs/heads/production'
-
-    steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    # Retrieve the prepared plan
-    - name: Download Plan
-      uses: actions/download-artifact@v2
-      with:
-        name: terraform-plan
-        path: '.'
-
-    # Use openssl symmetric decryption, as github action artifacts are public
-    - name: Decrypt Archived Plan
-      run: |
-        openssl enc -pass env:ARTIFACT_SECRET_KEY -d -aes-256-ctr -pbkdf2 -in ./tfplan.enc -out tfplan.zip
-
-    # https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/
-    - name: Configure AWS Credentials
-      run: |
-        echo AWS_ROLE_ARN="arn:aws:iam::055237546114:role/terraform-plans" >> $GITHUB_ENV
-        echo AWS_WEB_IDENTITY_TOKEN_FILE=webidentity.json                  >> $GITHUB_ENV
-        echo AWS_DEFAULT_REGION=eu-west-2                                  >> $GITHUB_ENV
-        source $GITHUB_ENV
-
-        curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > webidentity.json
-
-    # Terraform init (again), reload the providers
-    - name: Terraform Init
-      run: terraform init
-
-    # On push to production or manual change reset infrastructure according to Terraform configuration files
-    - name: Terraform Apply
-      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-      run: terraform apply ./tfplan.zip
+  us-east-1:
+    uses: condime/terraform-plans/.github/workflows/terraform-run.yml@production
+    with:
+      region: us-east-1
+    secrets:
+      CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}
+      ARTIFACT_SECRET_KEY: ${{ secrets.ARTIFACT_SECRET_KEY }}
