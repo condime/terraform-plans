@@ -32,4 +32,9 @@ provider "aws" {
   }
 }
 
+provider "consul" {
+  address = "consul.condi.me:443"
+  scheme  = "https"
+}
+
 provider "random" {}
