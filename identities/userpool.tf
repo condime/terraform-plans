@@ -20,6 +20,16 @@ resource "aws_cognito_user_pool_client" "main" {
   supported_identity_providers = [
     aws_cognito_identity_provider.slack.provider_name,
   ]
+
+  # list of "code", "implicit", or "client_credentials"
+  allowed_oauth_flows = [
+    "code",
+    "implicit"
+  ]
+
+  allowed_oauth_scopes = [
+    "openid",
+  ]
 }
 
 resource "aws_cognito_identity_provider" "slack" {
