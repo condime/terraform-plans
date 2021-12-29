@@ -32,6 +32,12 @@ resource "aws_cognito_user_pool_client" "main" {
     "email",
     "profile",
   ]
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_client#explicit_auth_flows
+  explicit_auth_flows = [
+    "ALLOW_REFRESH_TOKEN_AUTH",
+    "ALLOW_USER_SRP_AUTH",
+  ]
 }
 
 resource "aws_cognito_identity_provider" "slack" {
