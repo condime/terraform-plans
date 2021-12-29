@@ -13,7 +13,9 @@ resource "aws_cognito_user_pool_client" "main" {
   user_pool_id = aws_cognito_user_pool.main.id
 
   generate_secret = true
-  callback_urls = []
+  callback_urls = [
+    "http://localhost:8000/accounts/amazon-cognito/login/callback/"
+  ]
 
   supported_identity_providers = [
     aws_cognito_identity_provider.slack.provider_name,
