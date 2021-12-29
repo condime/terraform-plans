@@ -54,4 +54,9 @@ resource "aws_cognito_identity_provider" "slack" {
     client_secret                 = var.oidc_client_secret
     oidc_issuer                   = "https://slack.com"
   }
+
+  attribute_mapping = {
+    "username" = "sub"
+    "email"    = "email"
+  }
 }
