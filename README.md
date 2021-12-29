@@ -4,6 +4,12 @@ This describes the main scope for running the [condi.me github org][1] itself.
 
 ## Running Terraform
 
+PRs opened from branches in this repository trigger a `terraform plan` run in
+a Github Action. When merged to the `production` branch, the changes can be
+applied from a manually approved step (also as a github workflow action).
+
+## Running Terraform Locally
+
 Terraform 1.0 (or compatible) is needed. You can download a specific version
 from the [terraform releases][2] page.
 
@@ -26,7 +32,7 @@ use `git` and `gpg` directly to access the secrets.
 With credentials now in the environment, you can now `init` and `plan` the
 terraform runs.
 
-    $ cd ~/src/condime/terraform-plans
+    $ cd ./eu-west-2  # or any region under management
     $ terraform init
     $ terraform plan -o output.tfplan
 
