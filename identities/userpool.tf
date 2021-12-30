@@ -14,7 +14,8 @@ resource "aws_cognito_user_pool_client" "main" {
 
   generate_secret = true
   callback_urls = [
-    "http://localhost:8000/accounts/amazon-cognito/login/callback/"
+    "http://localhost:8000/accounts/amazon-cognito/login/callback/",
+    "https://console.condi.me/accounts/amazon-cognito/login/callback/",
   ]
 
   supported_identity_providers = [
