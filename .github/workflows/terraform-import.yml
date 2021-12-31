@@ -3,6 +3,9 @@ name: 'Terraform Import'
 on:
   workflow_dispatch:
     inputs:
+      region:
+        description: 'AWS Region Name'
+        required: true
       resource:
         description: 'Resource Address'
         required: true
@@ -13,6 +16,10 @@ on:
 env:
   # Repository specific, contact @bencord0 to rotate
   CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}
+  AWS_DEFAULT_REGION: ${{ github.event.inputs.region }}
+
+permissions:
+  id-token: write
 
 jobs:
   terraform-import:
@@ -25,15 +32,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-    - name: Terraform Init
-      run: terraform init
-
-    # Checks that all Terraform configuration files adhere to a canonical format
-    - name: Terraform Format
-      run: terraform fmt -check
-
-    # Imports the resource into terraform
-    - name: Terraform Plan
+    - name: Configure AWS Credentials
       run: |
-        terraform import "${{ github.event.inputs.resource }}" "${{ github.event.inputs.id }}"
+        ./scripts/setup_aws_credentials.py \
+          --role "arn:aws:iam::055237546114:role/terraform-plans"
+
+    - name: Terraform Import
+      run: ./scripts/terraform_import.sh "${{ github.event.inputs.resource }}" "${{ github.event.inputs.id }}"
