@@ -6,14 +6,14 @@ if [[ -z "${ARTIFACT_SECRET_KEY}" ]]; then
     exit 1
 fi
 
+# Checks that all Terraform configuration files adhere to a canonical format
+terraform fmt -check -diff -recursive
+
 pushd "${AWS_DEFAULT_REGION}"
 
 # Initialize a new or existing Terraform working directory
 # by creating initial files, loading any remote state, downloading modules, etc.
 terraform init
-
-# Checks that all Terraform configuration files adhere to a canonical format
-terraform fmt -check
 
 # Generates an execution plan for Terraform
 terraform plan -out ./tfplan.zip
