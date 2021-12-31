@@ -24,7 +24,7 @@ resource "aws_iam_openid_connect_provider" "main" {
 module "slack-users-role" {
   source = "../modules/roles/slack-users"
 
-  oidc_provider_user_pool_arn       = module.identities.user_pool_arn
+  identity_provider_arn             = aws_iam_openid_connect_provider.main.arn
   oidc_provider_user_pool_endpoint  = module.identities.user_pool_endpoint
   oidc_provider_user_pool_client_id = module.identities.user_pool_client_id
 }

@@ -1,5 +1,5 @@
 resource "aws_iam_role" "slack-users" {
-  name               = "slack-users"
+  name               = "SlackUser"
   assume_role_policy = data.aws_iam_policy_document.assume-slack-users.json
 }
 
@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "assume-slack-users" {
         #
         # TODO: Provide access to different IAM Roles depending on Cognito
         #       User Pool Groups (manually managed?)
-        var.oidc_provider_user_pool_arn,
+        var.identity_provider_arn,
       ]
     }
 
