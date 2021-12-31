@@ -20,3 +20,11 @@ resource "aws_iam_openid_connect_provider" "main" {
     "9e99a48a9960b14926bb7f3b02e22da2b0ab7280",
   ]
 }
+
+module "slack-users-role" {
+  source = "../modules/roles/slack-users"
+
+  oidc_provider_user_pool_arn       = module.identities.user_pool_arn
+  oidc_provider_user_pool_endpoint  = module.identities.user_pool_endpoint
+  oidc_provider_user_pool_client_id = module.identities.user_pool_client_id
+}
