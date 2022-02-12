@@ -17,6 +17,10 @@ resource "aws_iam_openid_connect_provider" "main" {
   thumbprint_list = [
     # This is the thumbprint for cognito-idp.eu-west-2.amazonaws.com
     # and is not sufficient to uniquely identify our own user pools
+    # $ openssl s_client -servername cognito-idp.eu-west-2.amazonaws.com \
+    #     -showcerts -connect cognito-idp.eu-west-2.amazonaws.com:443 \
+    #     | openssl x509 -fingerprint -noout \
+    #     | cut -d'=' -f 2 | sed -e 's/://g'
     "9e99a48a9960b14926bb7f3b02e22da2b0ab7280",
   ]
 }
