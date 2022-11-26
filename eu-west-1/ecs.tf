@@ -60,6 +60,8 @@ resource "aws_ecs_service" "mastodon" {
   lifecycle {
     ignore_changes = [desired_count]
   }
+
+  tags = {}
 }
 
 resource "aws_ecs_task_definition" "mastodon" {
@@ -81,11 +83,23 @@ resource "aws_ecs_task_definition" "mastodon" {
 
   container_definitions = jsonencode([
     {
-      name         = "web"
-      image        = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
       command      = ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+      cpu          = 0
       environment  = [for k, v in local.environment : {"name": k, "value": v}]
       essential    = true
+      image        = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-create-group"  = "true"
+          "awslogs-group"         = "/ecs/mastodon"
+          "awslogs-region"        = "eu-west-1"
+          "awslogs-stream-prefix" = "ecs"
+        }
+        secretOptions = []
+      }
+      mountPoints = []
+      name         = "web"
       portMappings = [
         {
           containerPort = 3000
@@ -93,7 +107,15 @@ resource "aws_ecs_task_definition" "mastodon" {
           protocol      = "tcp"
         }
       ]
+      volumesFrom = []
+    },
 
+    {
+      command      = ["node", "./streaming"]
+      cpu          = 0
+      environment  = [for k, v in local.environment : {"name": k, "value": v}]
+      essential    = true
+      image        = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -104,14 +126,8 @@ resource "aws_ecs_task_definition" "mastodon" {
         }
         secretOptions = []
       }
-    },
-
-    {
+      mountPoints = []
       name         = "streaming"
-      image        = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
-      command      = ["node", "./streaming"]
-      environment  = [for k, v in local.environment : {"name": k, "value": v}]
-      essential    = true
       portMappings = [
         {
           containerPort = 4000
@@ -119,25 +135,15 @@ resource "aws_ecs_task_definition" "mastodon" {
           protocol      = "tcp"
         }
       ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-create-group"  = "true"
-          "awslogs-group"         = "/ecs/mastodon"
-          "awslogs-region"        = "eu-west-1"
-          "awslogs-stream-prefix" = "ecs"
-        }
-        secretOptions = []
-      }
+      volumesFrom = []
     },
 
     {
-      name        = "sidekiq"
-      image       = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
       command     = ["bundle", "exec", "sidekiq"]
+      cpu         = 0
       environment = [for k, v in local.environment : {"name": k, "value": v}]
       essential   = true
+      image       = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -149,6 +155,11 @@ resource "aws_ecs_task_definition" "mastodon" {
         }
         secretOptions = []
       }
+
+      mountPoints  = []
+      name        = "sidekiq"
+      portMappings = []
+      volumesFrom  = []
     }
   ])
 
@@ -166,10 +177,12 @@ locals {
     DATABASE_URL           = data.consul_keys.mastodon.var.database_url
     REDIS_URL              = data.consul_keys.mastodon.var.redis_url
 
-    BIND                   = "0.0.0.0"
-    LOCAL_DOMAIN           = "nfra.club"
-    RAILS_ENV              = "production"
-    STREAMING_API_BASE_URL = "wss://streaming.nfra.club"
+    BIND                     = "0.0.0.0"
+    LOCAL_DOMAIN             = "nfra.club"
+    RAILS_ENV                = "production"
+    CDN_HOST                 = "https://static.nfra.club"
+    STREAMING_API_BASE_URL   = "wss://streaming.nfra.club"
+    RAILS_SERVE_STATIC_FILES = "true"
 
     OTP_SECRET             = data.consul_keys.mastodon.var.otp_secret
     SECRET_KEY_BASE        = data.consul_keys.mastodon.var.secret_key_base
@@ -181,6 +194,5 @@ locals {
 
     VAPID_PRIVATE_KEY = data.consul_keys.mastodon.var.vapid_private_key
     VAPID_PUBLIC_KEY  = data.consul_keys.mastodon.var.vapid_public_key
-
   }
 }

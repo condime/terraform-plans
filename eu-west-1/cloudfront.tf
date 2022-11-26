@@ -1,3 +1,26 @@
+locals {
+  origin_request_policy = {
+    AllViewer                     = "216adef6-5c7f-47e4-b989-5492eafa07d3"
+    AllViewerAndCloudFrontHeaders = "33f36d7e-f396-46d9-90e0-52428a34d9dc"
+    CORSCustomOrigin              = "59781a5b-3903-41f3-afcb-af62929ccde1"
+    CORSS3Origin                  = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf"
+  }
+
+  cache_policy = {
+    CachingDisabled                        = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    CachingOptimized                       = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    CachingOptimizedForUncompressedObjects = "b2884449-e4de-46a7-ac36-70bc7f1ddd6d"
+  }
+
+  response_headers = {
+    SimpleCORS                   = "60669652-455b-4ae9-85a4-c4c02393f86c"
+    SecurityHeaders              = "67f7725c-6f97-4210-82d7-5512b31e9d03"
+    CORSPreflight                = "5cc3b908-e619-4b99-88e5-2cf7f45965bd"
+    CORSSecurityHeaders          = "e61eb60c-9c35-4d20-a928-2b84e02af89c"
+    CORSPreflightSecurityHeaders = "eaab4381-ed33-4a86-88ca-d9558dc6cd63"
+  }
+}
+
 resource "aws_cloudfront_distribution" "mastodon-useruploads" {
   aliases = [
     "useruploads.nfra.club",
@@ -9,8 +32,8 @@ resource "aws_cloudfront_distribution" "mastodon-useruploads" {
   price_class     = "PriceClass_100"
 
   origin {
-    domain_name = "nfraclubuserassets.s3.eu-west-1.amazonaws.com"
-    origin_id   = "nfraclubuserassets.s3.eu-west-1.amazonaws.com"
+    domain_name = aws_s3_bucket.mastodon-useruploads.bucket_regional_domain_name
+    origin_id   = aws_s3_bucket.mastodon-useruploads.bucket_regional_domain_name
   }
 
   default_cache_behavior {
@@ -22,10 +45,11 @@ resource "aws_cloudfront_distribution" "mastodon-useruploads" {
     min_ttl                = 0
     viewer_protocol_policy = "redirect-to-https"
 
-    origin_request_policy_id   = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf"
-    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
-    response_headers_policy_id = "eaab4381-ed33-4a86-88ca-d9558dc6cd63"
-    target_origin_id = "nfraclubuserassets.s3.eu-west-1.amazonaws.com"
+    origin_request_policy_id   = local.origin_request_policy["CORSS3Origin"]
+    cache_policy_id            = local.cache_policy["CachingOptimized"]
+    response_headers_policy_id = local.response_headers["CORSPreflightSecurityHeaders"]
+
+    target_origin_id = aws_s3_bucket.mastodon-useruploads.bucket_regional_domain_name
  }
 
   viewer_certificate {
@@ -43,33 +67,9 @@ resource "aws_cloudfront_distribution" "mastodon-useruploads" {
   wait_for_deployment = false
 }
 
-locals {
-  application_paths = [
-    "/",
-    "/@*",
-    "/api/*",
-    "/actor/*",
-    "/admin/*",
-    "/auth/*",
-    "/authorize_interaction*",
-    "/disputes/*",
-    "/filters*",
-    "/inbox*",
-    "/invites*",
-    "/oauth/*",
-    "/pghero/*",
-    "/relationships*",
-    "/sidekiq/*",
-    "/settings/*",
-    "/statuses_cleanup*",
-    "/share*",
-    "/users/*",
-  ]
-}
-
 resource "aws_cloudfront_distribution" "mastodon-assets" {
   aliases = [
-    "nfra.club",
+    "static.nfra.club",
   ]
 
   enabled         = true
@@ -78,18 +78,50 @@ resource "aws_cloudfront_distribution" "mastodon-assets" {
   price_class     = "PriceClass_100"
 
   origin {
-    connection_attempts = 3
-    connection_timeout  = 1
-
     domain_name = aws_s3_bucket.mastodon-static.bucket_regional_domain_name
     origin_id   = aws_s3_bucket.mastodon-static.bucket_regional_domain_name
+  }
 
-    s3_origin_config {
-      # XXX: Public
-      # Consider using an access identity?
-      origin_access_identity = ""
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD", "OPTIONS"]
+    compress               = true
+    default_ttl            = 0
+    max_ttl                = 0
+    min_ttl                = 0
+    viewer_protocol_policy = "redirect-to-https"
+
+    cache_policy_id            = local.cache_policy["CachingOptimized"]
+    origin_request_policy_id   = local.origin_request_policy["CORSS3Origin"]
+    response_headers_policy_id = local.response_headers["CORSPreflightSecurityHeaders"]
+
+    target_origin_id = aws_s3_bucket.mastodon-static.bucket_regional_domain_name
+ }
+
+  viewer_certificate {
+    acm_certificate_arn      = "arn:aws:acm:us-east-1:055237546114:certificate/c4a4539a-a2c3-4c63-b133-ab29ea03da1e"
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
     }
   }
+
+  wait_for_deployment = false
+}
+
+resource "aws_cloudfront_distribution" "mastodon-web" {
+  aliases = [
+    "nfra.club",
+  ]
+
+  enabled         = true
+  http_version    = "http2and3"
+  is_ipv6_enabled = true
+  price_class     = "PriceClass_100"
 
   origin {
     domain_name = aws_lb.mastodon.dns_name
@@ -103,58 +135,20 @@ resource "aws_cloudfront_distribution" "mastodon-assets" {
     }
   }
 
-  origin_group {
-    origin_id = "mastodon"
-
-    failover_criteria {
-      status_codes = [404]
-    }
-
-    member {
-      origin_id = aws_s3_bucket.mastodon-static.bucket_regional_domain_name
-    }
-    member {
-      origin_id = aws_lb.mastodon.dns_name
-    }
-
-   }
-
-  dynamic "ordered_cache_behavior" {
-    for_each = local.application_paths
-
-    content {
-      allowed_methods        = ["GET", "HEAD", "OPTIONS", "DELETE", "PATCH", "POST", "PUT"]
-      cached_methods         = ["GET", "HEAD"]
-      compress               = false
-      default_ttl            = 0
-      max_ttl                = 0
-      min_ttl                = 0
-      path_pattern           = ordered_cache_behavior.value
-      smooth_streaming       = false
-      trusted_key_groups     = []
-      trusted_signers        = []
-      viewer_protocol_policy = "redirect-to-https"
-
-      cache_policy_id            = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
-      origin_request_policy_id   = "216adef6-5c7f-47e4-b989-5492eafa07d3"
-      response_headers_policy_id = "67f7725c-6f97-4210-82d7-5512b31e9d03"
-      target_origin_id           = aws_lb.mastodon.dns_name
-    }
-  }
-
   default_cache_behavior {
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "POST", "DELETE"]
+    cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
     default_ttl            = 0
     max_ttl                = 0
     min_ttl                = 0
     viewer_protocol_policy = "redirect-to-https"
 
-    cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
-    origin_request_policy_id   = "216adef6-5c7f-47e4-b989-5492eafa07d3"
-    response_headers_policy_id = "67f7725c-6f97-4210-82d7-5512b31e9d03"
-    target_origin_id           = "mastodon"
+    cache_policy_id            = local.cache_policy["CachingOptimizedForUncompressedObjects"]
+    origin_request_policy_id   = local.origin_request_policy["AllViewer"]
+    response_headers_policy_id = local.response_headers["SecurityHeaders"]
+
+    target_origin_id = aws_lb.mastodon.dns_name
  }
 
   viewer_certificate {
