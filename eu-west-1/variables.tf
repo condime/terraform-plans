@@ -33,3 +33,10 @@ data "consul_keys" "mastodon" {
     path = "condime/terraform_state/mastodon/vapid_public_key"
   }
 }
+
+data "consul_keys" "honeycomb" {
+  key {
+    name = "honeycomb_api_key"
+    path = "condime/terraform_state/honeycomb/honeycomb_api_key"
+  }
+}
