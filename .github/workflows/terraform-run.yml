@@ -2,8 +2,6 @@ name: "Terraform Run"
 
 on:
   workflow_call:
-    inputs:
-      region: { required: true, type: string }
     secrets:
       CONSUL_HTTP_TOKEN: { required: true }
       ARTIFACT_SECRET_KEY: { required: true }
@@ -11,7 +9,6 @@ on:
 env:
   CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}      # Repository specific, contact @bencord0 to rotate
   ARTIFACT_SECRET_KEY: ${{ secrets.ARTIFACT_SECRET_KEY }}  # Random, e.g. $(uuidgen); not stored, free to rotate at any time
-  AWS_DEFAULT_REGION: ${{ inputs.region }}
 
 permissions:
   id-token: write
@@ -20,6 +17,10 @@ jobs:
   terraform-plan:
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        region: ["eu-west-1", "eu-west-2", "us-east-1"]
 
     steps:
     - name: Checkout
@@ -32,13 +33,15 @@ jobs:
 
     - name: Terraform Plan
       run: ./scripts/terraform_plan.sh
+      env:
+        AWS_DEFAULT_REGION: ${{ matrix.region }}
 
     # Saves the plan as an artifact
     - name: Save Encrypted Plan
       uses: actions/upload-artifact@v2
       with:
-        name: terraform-plan-${{ inputs.region }}
-        path: './tfplan-${{ inputs.region }}.enc'
+        name: terraform-plan-${{ matrix.region }}
+        path: './tfplan-${{ matrix.region }}.enc'
         retention-days: 1
 
   terraform-apply:
@@ -57,7 +60,7 @@ jobs:
     - name: Download Plan
       uses: actions/download-artifact@v2
       with:
-        name: terraform-plan-${{ inputs.region }}
+        name: terraform-plan-${{ matrix.region }}
         path: '.'
 
     - name: Configure AWS Credentials
@@ -67,3 +70,5 @@ jobs:
 
     - name: Terraform Apply
       run: ./scripts/terraform_apply.sh
+      env:
+        AWS_DEFAULT_REGION: ${{ matrix.region }}
