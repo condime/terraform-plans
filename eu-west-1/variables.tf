@@ -24,6 +24,11 @@ data "consul_keys" "mastodon" {
   }
 
   key {
+    name = "smtp_password"
+    path = "condime/terraform_state/mastodon/smtp_password"
+  }
+
+  key {
     name = "vapid_private_key"
     path = "condime/terraform_state/mastodon/vapid_private_key"
   }

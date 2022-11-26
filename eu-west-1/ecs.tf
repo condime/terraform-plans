@@ -192,6 +192,12 @@ locals {
     S3_REGION              = "eu-west-1"
     S3_ALIAS_HOST          = "useruploads.nfra.club"
 
+    SMTP_SERVER       = "citadel.condi.me"
+    SMTP_PORT         = "26"
+    SMTP_LOGIN        = "nfra"
+    SMTP_PASSWORD     = data.consul_keys.mastodon.var.smtp_password
+    SMTP_FROM_ADDRESS = "notifications@nfra.club"
+
     VAPID_PRIVATE_KEY = data.consul_keys.mastodon.var.vapid_private_key
     VAPID_PUBLIC_KEY  = data.consul_keys.mastodon.var.vapid_public_key
   }
