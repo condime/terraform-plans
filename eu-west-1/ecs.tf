@@ -26,7 +26,8 @@ resource "aws_ecs_service" "mastodon" {
   name    = "mastodon"
   cluster = aws_ecs_cluster.default.id
 
-  platform_version = "LATEST"
+  platform_version       = "LATEST"
+  enable_execute_command = true
 
   # AWS Managed, when on Fargate this is not configurable
   # service role: Used to register into load balancers
@@ -75,6 +76,7 @@ resource "aws_ecs_service" "mastodon" {
 resource "aws_ecs_task_definition" "mastodon" {
   family = "mastodon"
 
+  # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html#fargate-tasks-size
   cpu    = "512"
   memory = "1024"
 
@@ -96,6 +98,11 @@ resource "aws_ecs_task_definition" "mastodon" {
       environment = [for k, v in local.environment : { "name" : k, "value" : v }]
       essential   = true
       image       = "${aws_ecr_repository.mastodon.repository_url}${local.container_image_tag}"
+
+      linuxParameters = {
+        initProcessEnabled = true
+      }
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {

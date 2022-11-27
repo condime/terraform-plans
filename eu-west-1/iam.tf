@@ -15,13 +15,13 @@ resource "aws_iam_role" "mastodon-task-role" {
 
 resource "aws_iam_role_policy_attachment" "mastodon-task-role" {
   role       = aws_iam_role.mastodon-task-role.id
-  policy_arn = aws_iam_policy.mastodon-useruploads.arn
+  policy_arn = aws_iam_policy.mastodon-task-role.arn
 }
 
 
-resource "aws_iam_policy" "mastodon-useruploads" {
-  name   = "mastodon-user-assets"
-  policy = data.aws_iam_policy_document.mastodon-useruploads.json
+resource "aws_iam_policy" "mastodon-task-role" {
+  name   = "mastodon-task-role"
+  policy = data.aws_iam_policy_document.mastodon-task-role.json
 }
 
 data "aws_iam_policy_document" "assume-ecs-tasks" {
@@ -37,7 +37,7 @@ data "aws_iam_policy_document" "assume-ecs-tasks" {
   }
 }
 
-data "aws_iam_policy_document" "mastodon-useruploads" {
+data "aws_iam_policy_document" "mastodon-task-role" {
   statement {
     actions = [
       "s3:AbortMultipartUpload",
@@ -73,6 +73,18 @@ data "aws_iam_policy_document" "mastodon-useruploads" {
       "${aws_s3_bucket.mastodon-useruploads.arn}/*",
     ]
   }
+
+  # https://aws.amazon.com/premiumsupport/knowledge-center/ecs-error-execute-command/
+  statement {
+    actions = [
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel",
+    ]
+
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_user" "mastodon-useruploads" {
@@ -81,7 +93,7 @@ resource "aws_iam_user" "mastodon-useruploads" {
 
 resource "aws_iam_user_policy_attachment" "mastodon-useruploads" {
   user       = aws_iam_user.mastodon-useruploads.id
-  policy_arn = aws_iam_policy.mastodon-useruploads.arn
+  policy_arn = aws_iam_policy.mastodon-task-role.arn
 }
 
 resource "aws_iam_access_key" "mastodon-useruploads" {
