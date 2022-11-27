@@ -183,6 +183,7 @@ locals {
     CDN_HOST                 = "https://static.nfra.club"
     STREAMING_API_BASE_URL   = "wss://streaming.nfra.club"
     RAILS_SERVE_STATIC_FILES = "true"
+    PAPERCLIP_ROOT_PATH      = "/var/lib/mastodon/userassets"
 
     OTP_SECRET      = data.consul_keys.mastodon.var.otp_secret
     SECRET_KEY_BASE = data.consul_keys.mastodon.var.secret_key_base
