@@ -87,7 +87,7 @@ resource "aws_ecs_task_definition" "mastodon" {
       cpu         = 0
       environment = [for k, v in local.environment : { "name" : k, "value" : v }]
       essential   = true
-      image       = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
+      image       = "${aws_ecr_repository.mastodon.repository_url}${local.container_image_tag}"
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -115,7 +115,7 @@ resource "aws_ecs_task_definition" "mastodon" {
       cpu         = 0
       environment = [for k, v in local.environment : { "name" : k, "value" : v }]
       essential   = true
-      image       = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
+      image       = "${aws_ecr_repository.mastodon.repository_url}${local.container_image_tag}"
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -143,7 +143,7 @@ resource "aws_ecs_task_definition" "mastodon" {
       cpu         = 0
       environment = [for k, v in local.environment : { "name" : k, "value" : v }]
       essential   = true
-      image       = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
+      image       = "${aws_ecr_repository.mastodon.repository_url}${local.container_image_tag}"
 
       logConfiguration = {
         logDriver = "awslogs"
