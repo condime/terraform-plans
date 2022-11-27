@@ -187,10 +187,11 @@ locals {
     OTP_SECRET      = data.consul_keys.mastodon.var.otp_secret
     SECRET_KEY_BASE = data.consul_keys.mastodon.var.secret_key_base
 
-    S3_BUCKET     = aws_s3_bucket.mastodon-useruploads.id
-    S3_ENABLED    = "true"
-    S3_REGION     = "eu-west-1"
-    S3_ALIAS_HOST = "useruploads.nfra.club"
+    S3_BUCKET               = aws_s3_bucket.mastodon-useruploads.id
+    S3_ENABLED              = "true"
+    S3_REGION               = "eu-west-1"
+    S3_ALIAS_HOST           = "useruploads.nfra.club"
+    S3_FORCE_SINGLE_REQUEST = "true"
 
     SMTP_SERVER       = "citadel.condi.me"
     SMTP_PORT         = "26"
