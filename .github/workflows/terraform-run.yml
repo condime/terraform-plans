@@ -1,10 +1,10 @@
 name: "Terraform Run"
 
 on:
-  workflow_call:
-    secrets:
-      CONSUL_HTTP_TOKEN: { required: true }
-      ARTIFACT_SECRET_KEY: { required: true }
+  push:
+    branches: [production]
+  pull_request:
+  workflow_dispatch:
 
 env:
   CONSUL_HTTP_TOKEN: ${{ secrets.CONSUL_HTTP_TOKEN }}      # Repository specific, contact @bencord0 to rotate
