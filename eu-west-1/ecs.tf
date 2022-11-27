@@ -9,14 +9,14 @@ resource "aws_ecs_cluster" "default" {
 }
 
 resource "aws_ecs_service" "mastodon" {
-  name = "mastodon"
+  name    = "mastodon"
   cluster = aws_ecs_cluster.default.id
 
   platform_version = "LATEST"
 
   # AWS Managed, when on Fargate
   # service role: Used to register into load balancers
-  iam_role    = "aws-service-role"
+  iam_role = "aws-service-role"
 
   # task role: Used by the containers, referenced in task definition
   depends_on      = [aws_iam_role.mastodon-task-role]
@@ -83,11 +83,11 @@ resource "aws_ecs_task_definition" "mastodon" {
 
   container_definitions = jsonencode([
     {
-      command      = ["bundle", "exec", "puma", "-C", "config/puma.rb"]
-      cpu          = 0
-      environment  = [for k, v in local.environment : {"name": k, "value": v}]
-      essential    = true
-      image        = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
+      command     = ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+      cpu         = 0
+      environment = [for k, v in local.environment : { "name" : k, "value" : v }]
+      essential   = true
+      image       = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -99,7 +99,7 @@ resource "aws_ecs_task_definition" "mastodon" {
         secretOptions = []
       }
       mountPoints = []
-      name         = "web"
+      name        = "web"
       portMappings = [
         {
           containerPort = 3000
@@ -111,11 +111,11 @@ resource "aws_ecs_task_definition" "mastodon" {
     },
 
     {
-      command      = ["node", "./streaming"]
-      cpu          = 0
-      environment  = [for k, v in local.environment : {"name": k, "value": v}]
-      essential    = true
-      image        = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
+      command     = ["node", "./streaming"]
+      cpu         = 0
+      environment = [for k, v in local.environment : { "name" : k, "value" : v }]
+      essential   = true
+      image       = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -127,7 +127,7 @@ resource "aws_ecs_task_definition" "mastodon" {
         secretOptions = []
       }
       mountPoints = []
-      name         = "streaming"
+      name        = "streaming"
       portMappings = [
         {
           containerPort = 4000
@@ -141,7 +141,7 @@ resource "aws_ecs_task_definition" "mastodon" {
     {
       command     = ["bundle", "exec", "sidekiq"]
       cpu         = 0
-      environment = [for k, v in local.environment : {"name": k, "value": v}]
+      environment = [for k, v in local.environment : { "name" : k, "value" : v }]
       essential   = true
       image       = "${aws_ecr_repository.mastodon.repository_url}:${local.container_image_tag}"
 
@@ -157,7 +157,7 @@ resource "aws_ecs_task_definition" "mastodon" {
       }
 
       mountPoints  = []
-      name        = "sidekiq"
+      name         = "sidekiq"
       portMappings = []
       volumesFrom  = []
     }
@@ -174,8 +174,8 @@ locals {
     AWS_ACCESS_KEY_ID     = aws_iam_access_key.mastodon-useruploads.id
     AWS_SECRET_ACCESS_KEY = aws_iam_access_key.mastodon-useruploads.secret
 
-    DATABASE_URL           = data.consul_keys.mastodon.var.database_url
-    REDIS_URL              = data.consul_keys.mastodon.var.redis_url
+    DATABASE_URL = data.consul_keys.mastodon.var.database_url
+    REDIS_URL    = data.consul_keys.mastodon.var.redis_url
 
     BIND                     = "0.0.0.0"
     LOCAL_DOMAIN             = "nfra.club"
@@ -184,13 +184,13 @@ locals {
     STREAMING_API_BASE_URL   = "wss://streaming.nfra.club"
     RAILS_SERVE_STATIC_FILES = "true"
 
-    OTP_SECRET             = data.consul_keys.mastodon.var.otp_secret
-    SECRET_KEY_BASE        = data.consul_keys.mastodon.var.secret_key_base
+    OTP_SECRET      = data.consul_keys.mastodon.var.otp_secret
+    SECRET_KEY_BASE = data.consul_keys.mastodon.var.secret_key_base
 
-    S3_BUCKET              = aws_s3_bucket.mastodon-useruploads.id
-    S3_ENABLED             = "true"
-    S3_REGION              = "eu-west-1"
-    S3_ALIAS_HOST          = "useruploads.nfra.club"
+    S3_BUCKET     = aws_s3_bucket.mastodon-useruploads.id
+    S3_ENABLED    = "true"
+    S3_REGION     = "eu-west-1"
+    S3_ALIAS_HOST = "useruploads.nfra.club"
 
     SMTP_SERVER       = "citadel.condi.me"
     SMTP_PORT         = "26"

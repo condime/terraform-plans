@@ -1,7 +1,7 @@
 variable "vpc_id" {}
 
 variable "azs" {
-  type = list
+  type = list(any)
 }
 
 variable "cidr_v4" {}

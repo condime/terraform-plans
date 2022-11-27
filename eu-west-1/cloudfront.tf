@@ -50,7 +50,7 @@ resource "aws_cloudfront_distribution" "mastodon-useruploads" {
     response_headers_policy_id = local.response_headers["CORSPreflightSecurityHeaders"]
 
     target_origin_id = aws_s3_bucket.mastodon-useruploads.bucket_regional_domain_name
- }
+  }
 
   viewer_certificate {
     acm_certificate_arn      = "arn:aws:acm:us-east-1:055237546114:certificate/c4a4539a-a2c3-4c63-b133-ab29ea03da1e"
@@ -96,7 +96,7 @@ resource "aws_cloudfront_distribution" "mastodon-assets" {
     response_headers_policy_id = local.response_headers["CORSPreflightSecurityHeaders"]
 
     target_origin_id = aws_s3_bucket.mastodon-static.bucket_regional_domain_name
- }
+  }
 
   viewer_certificate {
     acm_certificate_arn      = "arn:aws:acm:us-east-1:055237546114:certificate/c4a4539a-a2c3-4c63-b133-ab29ea03da1e"
@@ -128,9 +128,9 @@ resource "aws_cloudfront_distribution" "mastodon-web" {
     origin_id   = aws_lb.mastodon.dns_name
 
     custom_origin_config {
-      http_port = 80
-      https_port = 443
-      origin_ssl_protocols = ["TLSv1.2"]
+      http_port              = 80
+      https_port             = 443
+      origin_ssl_protocols   = ["TLSv1.2"]
       origin_protocol_policy = "https-only"
     }
   }
@@ -149,7 +149,7 @@ resource "aws_cloudfront_distribution" "mastodon-web" {
     response_headers_policy_id = local.response_headers["SecurityHeaders"]
 
     target_origin_id = aws_lb.mastodon.dns_name
- }
+  }
 
   viewer_certificate {
     acm_certificate_arn      = "arn:aws:acm:us-east-1:055237546114:certificate/c4a4539a-a2c3-4c63-b133-ab29ea03da1e"

@@ -1,7 +1,7 @@
 # Cloudwatch Logs -> Kinesis Firehose -> Honeycomb
 
 locals {
-  honeycomb_dataset     = "nfraclub"
+  honeycomb_dataset = "nfraclub"
   cloudwatch_log_groups = [
     aws_cloudwatch_log_group.ecs-mastodon.name
   ]

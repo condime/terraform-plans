@@ -40,8 +40,8 @@ data "aws_iam_policy_document" "honeycomb-firehose-s3" {
     ]
 
     resources = [
-	  aws_s3_bucket.honeycomb-s3.arn,
-	  "${aws_s3_bucket.honeycomb-s3.arn}/*",
+      aws_s3_bucket.honeycomb-s3.arn,
+      "${aws_s3_bucket.honeycomb-s3.arn}/*",
     ]
   }
 }

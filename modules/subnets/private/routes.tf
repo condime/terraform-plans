@@ -5,7 +5,7 @@ resource "aws_route_table" "private" {
   count = local.subnet_count
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = element(var.ipv4_nat_ids, count.index % local.nat_count)
   }
 

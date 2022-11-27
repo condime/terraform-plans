@@ -69,8 +69,8 @@ data "aws_iam_policy_document" "mastodon-useruploads" {
     ]
 
     resources = [
-	  aws_s3_bucket.mastodon-useruploads.arn,
-	  "${aws_s3_bucket.mastodon-useruploads.arn}/*",
+      aws_s3_bucket.mastodon-useruploads.arn,
+      "${aws_s3_bucket.mastodon-useruploads.arn}/*",
     ]
   }
 }
