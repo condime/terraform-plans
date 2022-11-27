@@ -167,7 +167,7 @@ resource "aws_ecs_task_definition" "mastodon" {
 }
 
 locals {
-  container_image_tag = "4.0.2"
+  container_image_tag = "@sha256:4dc1efcfe81f8fd46310e3bcdcde610e2586c36da968ad18642634d1173e3371"
 
   environment = {
     # Mastodon (via kt-paperclip) does not know how to use task role credentials
