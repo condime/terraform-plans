@@ -8,15 +8,29 @@ resource "aws_ecs_cluster" "default" {
   }
 }
 
+resource "aws_ecs_cluster_capacity_providers" "fargate" {
+  cluster_name = aws_ecs_cluster.default.name
+
+  capacity_providers = [
+    "FARGATE_SPOT",
+  ]
+
+  default_capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    base              = 0
+    weight            = 1
+  }
+}
+
 resource "aws_ecs_service" "mastodon" {
   name    = "mastodon"
   cluster = aws_ecs_cluster.default.id
 
   platform_version = "LATEST"
 
-  # AWS Managed, when on Fargate
+  # AWS Managed, when on Fargate this is not configurable
   # service role: Used to register into load balancers
-  iam_role = "aws-service-role"
+  #iam_role = "aws-service-role"
 
   # task role: Used by the containers, referenced in task definition
   depends_on      = [aws_iam_role.mastodon-task-role]
@@ -45,12 +59,6 @@ resource "aws_ecs_service" "mastodon" {
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"
-    base              = 1
-    weight            = 1
-  }
-
-  capacity_provider_strategy {
-    capacity_provider = "FARGATE"
     base              = 0
     weight            = 1
   }
