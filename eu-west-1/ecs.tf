@@ -190,7 +190,7 @@ locals {
     AWS_SECRET_ACCESS_KEY = aws_iam_access_key.mastodon-useruploads.secret
 
     DATABASE_URL = data.consul_keys.mastodon.var.database_url
-    REDIS_URL    = data.consul_keys.mastodon.var.redis_url
+    REDIS_URL    = local.mastodon_redis_url
 
     BIND                     = "0.0.0.0"
     LOCAL_DOMAIN             = "nfra.club"

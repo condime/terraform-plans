@@ -9,11 +9,6 @@ data "consul_keys" "mastodon" {
   }
 
   key {
-    name = "redis_url"
-    path = "condime/terraform_state/mastodon/redis_url"
-  }
-
-  key {
     name = "otp_secret"
     path = "condime/terraform_state/mastodon/otp_secret"
   }
