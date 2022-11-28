@@ -1,184 +1,69 @@
-resource "aws_ecs_cluster" "default" {
-  name = "default"
+module "ecs" {
+  source = "../modules/ecs"
 
-  configuration {
-    execute_command_configuration {
-      logging = "DEFAULT"
-    }
-  }
+  cluster_name = "default"
 }
 
-resource "aws_ecs_cluster_capacity_providers" "fargate" {
-  cluster_name = aws_ecs_cluster.default.name
+module "mastodon-web" {
+  source         = "../modules/service"
+  ecs_cluster_id = module.ecs.cluster_id
 
-  capacity_providers = [
-    "FARGATE_SPOT",
+  name = "mastodon-web"
+
+  load_balancers = [
+    {
+      target_group_arn = aws_lb_target_group.mastodon-web.arn
+      container_name   = "web"
+      container_port   = 3000
+    },
+
+    {
+      target_group_arn = aws_lb_target_group.mastodon-streaming.arn
+      container_name   = "streaming"
+      container_port   = 4000
+    }
   ]
 
-  default_capacity_provider_strategy {
-    capacity_provider = "FARGATE_SPOT"
-    base              = 0
-    weight            = 1
-  }
-}
+  subnet_ids         = module.private_subnets.subnet_ids
+  security_group_ids = [aws_security_group.default.id]
 
-resource "aws_ecs_service" "mastodon" {
-  name    = "mastodon"
-  cluster = aws_ecs_cluster.default.id
-
-  platform_version       = "LATEST"
-  enable_execute_command = true
-
-  # AWS Managed, when on Fargate this is not configurable
-  # service role: Used to register into load balancers
-  #iam_role = "aws-service-role"
-
-  # task role: Used by the containers, referenced in task definition
-  depends_on      = [aws_iam_role.mastodon-task-role]
-  task_definition = aws_ecs_task_definition.mastodon.arn
-
-  propagate_tags                    = "NONE"
-  health_check_grace_period_seconds = 60
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.mastodon-web.arn
-    container_name   = "web"
-    container_port   = 3000
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.mastodon-streaming.arn
-    container_name   = "streaming"
-    container_port   = 4000
-  }
-
-  network_configuration {
-    subnets          = module.private_subnets.subnet_ids
-    security_groups  = [aws_security_group.default.id]
-    assign_public_ip = false
-  }
-
-  capacity_provider_strategy {
-    capacity_provider = "FARGATE_SPOT"
-    base              = 0
-    weight            = 1
-  }
-
-  desired_count = 1
-
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
-
-  tags = {}
-}
-
-resource "aws_ecs_task_definition" "mastodon" {
-  family = "mastodon"
-
-  # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html#fargate-tasks-size
-  cpu    = "512"
-  memory = "1024"
-
-  requires_compatibilities = ["FARGATE"]
-  network_mode             = "awsvpc"
-
-  runtime_platform {
-    operating_system_family = "LINUX"
-    cpu_architecture        = "X86_64"
-  }
+  task_cpu    = "512"
+  task_memory = "2048"
 
   execution_role_arn = aws_iam_role.mastodon-execution-role.arn
   task_role_arn      = aws_iam_role.mastodon-task-role.arn
 
-  container_definitions = jsonencode([
-    {
-      command     = ["bundle", "exec", "puma", "-C", "config/puma.rb"]
-      cpu         = 0
-      environment = [for k, v in local.environment : { "name" : k, "value" : v }]
-      essential   = true
-      image       = "${aws_ecr_repository.mastodon.repository_url}${local.container_image_tag}"
+  container_definitions = local.web_container_definitions
+}
 
-      linuxParameters = {
-        initProcessEnabled = true
-      }
+module "mastodon-scheduler" {
+  source         = "../modules/service"
+  ecs_cluster_id = module.ecs.cluster_id
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-create-group"  = "true"
-          "awslogs-group"         = "/ecs/mastodon"
-          "awslogs-region"        = "eu-west-1"
-          "awslogs-stream-prefix" = "ecs"
-        }
-        secretOptions = []
-      }
-      mountPoints = []
-      name        = "web"
-      portMappings = [
-        {
-          containerPort = 3000
-          hostPort      = 3000
-          protocol      = "tcp"
-        }
-      ]
-      volumesFrom = []
-    },
+  name = "mastodon-scheduler"
 
-    {
-      command     = ["node", "./streaming"]
-      cpu         = 0
-      environment = [for k, v in local.environment : { "name" : k, "value" : v }]
-      essential   = true
-      image       = "${aws_ecr_repository.mastodon.repository_url}${local.container_image_tag}"
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-create-group"  = "true"
-          "awslogs-group"         = "/ecs/mastodon"
-          "awslogs-region"        = "eu-west-1"
-          "awslogs-stream-prefix" = "ecs"
-        }
-        secretOptions = []
-      }
-      mountPoints = []
-      name        = "streaming"
-      portMappings = [
-        {
-          containerPort = 4000
-          hostPort      = 4000
-          protocol      = "tcp"
-        }
-      ]
-      volumesFrom = []
-    },
+  subnet_ids         = module.private_subnets.subnet_ids
+  security_group_ids = [aws_security_group.default.id]
 
-    {
-      command     = ["bundle", "exec", "sidekiq"]
-      cpu         = 0
-      environment = [for k, v in local.environment : { "name" : k, "value" : v }]
-      essential   = true
-      image       = "${aws_ecr_repository.mastodon.repository_url}${local.container_image_tag}"
+  execution_role_arn = aws_iam_role.mastodon-execution-role.arn
+  task_role_arn      = aws_iam_role.mastodon-task-role.arn
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-create-group"  = "true"
-          "awslogs-group"         = "/ecs/mastodon"
-          "awslogs-region"        = "eu-west-1"
-          "awslogs-stream-prefix" = "ecs"
-        }
-        secretOptions = []
-      }
+  container_definitions = local.sidekiq_scheduler_container_definitions
+}
 
-      mountPoints  = []
-      name         = "sidekiq"
-      portMappings = []
-      volumesFrom  = []
-    }
-  ])
+module "mastodon-sidekiq" {
+  source         = "../modules/service"
+  ecs_cluster_id = module.ecs.cluster_id
 
-  depends_on = [aws_iam_role.mastodon-task-role]
+  name = "mastodon-sidekiq"
+
+  subnet_ids         = module.private_subnets.subnet_ids
+  security_group_ids = [aws_security_group.default.id]
+
+  execution_role_arn = aws_iam_role.mastodon-execution-role.arn
+  task_role_arn      = aws_iam_role.mastodon-task-role.arn
+
+  container_definitions = local.sidekiq_container_definitions
 }
 
 locals {

@@ -12,7 +12,7 @@ docker pull "${IMAGE}"
 docker tag "${IMAGE}" "${TARGET_IMAGE}"
 docker push "${TARGET_IMAGE}"
 
-IMAGE_DIGEST="$(docker inspect "${IMAGE}" \
+IMAGE_DIGEST="$(docker inspect "${TARGET_IMAGE}" \
     | jq -r '.[0].RepoDigests[0]' \
     | cut -d@ -f2)"
 sed -i -e "s/^  container_image_tag = .*\$/  container_image_tag = \"@${IMAGE_DIGEST}\"/" eu-west-1/ecs.tf
