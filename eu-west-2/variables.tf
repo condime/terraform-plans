@@ -1,3 +1,7 @@
+variable "region" {
+  default = "eu-west-2"
+}
+
 data "consul_keys" "slack_oidc" {
   key {
     name = "client_id"
