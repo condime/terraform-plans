@@ -93,6 +93,7 @@ locals {
     S3_REGION               = "eu-west-1"
     S3_ALIAS_HOST           = "useruploads.nfra.club"
     S3_FORCE_SINGLE_REQUEST = "true"
+    S3_PERMISSION           = "private"
 
     SMTP_SERVER       = "citadel.condi.me"
     SMTP_PORT         = "26"

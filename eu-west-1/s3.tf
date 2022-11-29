@@ -5,7 +5,7 @@ resource "aws_s3_bucket" "mastodon-static" {
 
 resource "aws_s3_bucket_acl" "mastodon-static" {
   bucket = aws_s3_bucket.mastodon-static.id
-  acl    = "public-read"
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_policy" "mastodon-static" {
@@ -16,8 +16,8 @@ resource "aws_s3_bucket_policy" "mastodon-static" {
 data "aws_iam_policy_document" "mastodon-static" {
   statement {
     principals {
-      type        = "*"
-      identifiers = ["*"]
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
     }
 
     actions = [
@@ -27,15 +27,15 @@ data "aws_iam_policy_document" "mastodon-static" {
     resources = [
       "${aws_s3_bucket.mastodon-static.arn}/*",
     ]
-  }
-}
 
-resource "aws_s3_bucket_cors_configuration" "mastodon-static" {
-  bucket = aws_s3_bucket.mastodon-static.id
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
 
-  cors_rule {
-    allowed_methods = ["GET"]
-    allowed_origins = ["*"]
+      values = [
+        aws_cloudfront_distribution.mastodon-assets.arn,
+      ]
+    }
   }
 }
 
@@ -47,14 +47,6 @@ resource "aws_s3_bucket_versioning" "mastodon-static" {
   }
 }
 
-resource "aws_s3_bucket_website_configuration" "mastodon-static" {
-  bucket = aws_s3_bucket.mastodon-static.id
-
-  index_document {
-    suffix = "index.html"
-  }
-}
-
 #--- useruploads.nfra.club
 resource "aws_s3_bucket" "mastodon-useruploads" {
   bucket = "nfraclubuserassets"
@@ -62,18 +54,19 @@ resource "aws_s3_bucket" "mastodon-useruploads" {
 
 resource "aws_s3_bucket_acl" "mastodon-useruploads" {
   bucket = aws_s3_bucket.mastodon-useruploads.id
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_policy" "mastodon-useruploads" {
   bucket = aws_s3_bucket.mastodon-useruploads.id
-  policy = data.aws_iam_policy_document.mastodon-useruploads-public-read.json
+  policy = data.aws_iam_policy_document.mastodon-useruploads.json
 }
 
-data "aws_iam_policy_document" "mastodon-useruploads-public-read" {
+data "aws_iam_policy_document" "mastodon-useruploads" {
   statement {
     principals {
-      type        = "*"
-      identifiers = ["*"]
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
     }
 
     actions = [
@@ -83,15 +76,15 @@ data "aws_iam_policy_document" "mastodon-useruploads-public-read" {
     resources = [
       "${aws_s3_bucket.mastodon-useruploads.arn}/*",
     ]
-  }
-}
 
-resource "aws_s3_bucket_cors_configuration" "mastodon-useruploads" {
-  bucket = aws_s3_bucket.mastodon-useruploads.id
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
 
-  cors_rule {
-    allowed_methods = ["GET"]
-    allowed_origins = ["*"]
+      values = [
+        aws_cloudfront_distribution.mastodon-useruploads.arn,
+      ]
+    }
   }
 }
 
@@ -100,13 +93,5 @@ resource "aws_s3_bucket_versioning" "mastodon-useruploads" {
 
   versioning_configuration {
     status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_website_configuration" "mastodon-useruploads" {
-  bucket = aws_s3_bucket.mastodon-useruploads.id
-
-  index_document {
-    suffix = "index.html"
   }
 }

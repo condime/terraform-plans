@@ -21,6 +21,14 @@ locals {
   }
 }
 
+resource "aws_cloudfront_origin_access_control" "default" {
+  name                              = "default"
+  description                       = "Default origin access controls"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
 resource "aws_cloudfront_distribution" "mastodon-useruploads" {
   aliases = [
     "useruploads.nfra.club",
@@ -34,6 +42,8 @@ resource "aws_cloudfront_distribution" "mastodon-useruploads" {
   origin {
     domain_name = aws_s3_bucket.mastodon-useruploads.bucket_regional_domain_name
     origin_id   = aws_s3_bucket.mastodon-useruploads.bucket_regional_domain_name
+
+    origin_access_control_id = aws_cloudfront_origin_access_control.default.id
   }
 
   default_cache_behavior {
@@ -80,15 +90,17 @@ resource "aws_cloudfront_distribution" "mastodon-assets" {
   origin {
     domain_name = aws_s3_bucket.mastodon-static.bucket_regional_domain_name
     origin_id   = aws_s3_bucket.mastodon-static.bucket_regional_domain_name
+
+    origin_access_control_id = aws_cloudfront_origin_access_control.default.id
   }
 
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
-    default_ttl            = 0
-    max_ttl                = 0
-    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+    min_ttl                = 1
     viewer_protocol_policy = "redirect-to-https"
 
     cache_policy_id            = local.cache_policy["CachingOptimized"]
@@ -139,9 +151,9 @@ resource "aws_cloudfront_distribution" "mastodon-web" {
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "POST", "DELETE"]
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
-    default_ttl            = 0
-    max_ttl                = 0
-    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+    min_ttl                = 1
     viewer_protocol_policy = "redirect-to-https"
 
     cache_policy_id            = local.cache_policy["CachingOptimizedForUncompressedObjects"]
