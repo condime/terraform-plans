@@ -5,7 +5,7 @@ module "ecs" {
 }
 
 module "mastodon-web" {
-  source         = "../modules/service"
+  source         = "../modules/ecs/service"
   ecs_cluster_id = module.ecs.cluster_id
 
   name = "mastodon-web"
@@ -37,7 +37,7 @@ module "mastodon-web" {
 }
 
 module "mastodon-scheduler" {
-  source         = "../modules/service"
+  source         = "../modules/ecs/service"
   ecs_cluster_id = module.ecs.cluster_id
 
   name = "mastodon-scheduler"
@@ -52,7 +52,7 @@ module "mastodon-scheduler" {
 }
 
 module "mastodon-sidekiq" {
-  source         = "../modules/service"
+  source         = "../modules/ecs/service"
   ecs_cluster_id = module.ecs.cluster_id
 
   name = "mastodon-sidekiq"
