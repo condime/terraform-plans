@@ -50,9 +50,6 @@ resource "aws_cloudfront_distribution" "mastodon-useruploads" {
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
-    default_ttl            = 0
-    max_ttl                = 0
-    min_ttl                = 0
     viewer_protocol_policy = "redirect-to-https"
 
     origin_request_policy_id   = local.origin_request_policy["CORSS3Origin"]
@@ -98,9 +95,6 @@ resource "aws_cloudfront_distribution" "mastodon-assets" {
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
-    default_ttl            = 3600
-    max_ttl                = 86400
-    min_ttl                = 1
     viewer_protocol_policy = "redirect-to-https"
 
     cache_policy_id            = local.cache_policy["CachingOptimized"]
@@ -151,9 +145,6 @@ resource "aws_cloudfront_distribution" "mastodon-web" {
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "POST", "DELETE"]
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
-    default_ttl            = 3600
-    max_ttl                = 86400
-    min_ttl                = 1
     viewer_protocol_policy = "redirect-to-https"
 
     cache_policy_id            = local.cache_policy["CachingOptimizedForUncompressedObjects"]
