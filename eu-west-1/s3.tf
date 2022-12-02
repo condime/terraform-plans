@@ -10,33 +10,27 @@ resource "aws_s3_bucket_acl" "mastodon-static" {
 
 resource "aws_s3_bucket_policy" "mastodon-static" {
   bucket = aws_s3_bucket.mastodon-static.id
-  policy = data.aws_iam_policy_document.mastodon-static.json
-}
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "s3:GetObject"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.mastodon-assets.arn
+          }
+        }
+        Effect = "Allow"
 
-data "aws_iam_policy_document" "mastodon-static" {
-  statement {
-    principals {
-      type        = "Service"
-      identifiers = ["cloudfront.amazonaws.com"]
-    }
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
 
-    actions = [
-      "s3:GetObject",
+        Resource = "${aws_s3_bucket.mastodon-static.arn}/*"
+        Sid      = ""
+      }
     ]
-
-    resources = [
-      "${aws_s3_bucket.mastodon-static.arn}/*",
-    ]
-
-    condition {
-      test     = "StringEquals"
-      variable = "AWS:SourceArn"
-
-      values = [
-        aws_cloudfront_distribution.mastodon-assets.arn,
-      ]
-    }
-  }
+  })
 }
 
 resource "aws_s3_bucket_versioning" "mastodon-static" {
