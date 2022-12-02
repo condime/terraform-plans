@@ -1,3 +1,30 @@
+resource "aws_iam_instance_profile" "nat" {
+  name = "nat"
+  role = aws_iam_role.nat.name
+}
+
+resource "aws_iam_role" "nat" {
+  name               = "nat"
+  description        = "EC2 Instance Role for NAT"
+  assume_role_policy = data.aws_iam_policy_document.assume-ec2.json
+}
+
+data "aws_iam_policy_document" "assume-ec2" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "nat" {
+  role       = aws_iam_role.nat.id
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 resource "aws_iam_role" "mastodon-execution-role" {
   name               = "mastodon-execution-role"
   assume_role_policy = data.aws_iam_policy_document.assume-ecs-tasks.json
