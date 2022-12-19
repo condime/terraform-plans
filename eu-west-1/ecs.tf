@@ -10,17 +10,10 @@ module "mastodon-web" {
 
   name = "mastodon-web"
 
-  load_balancers = [
+  service_registries = [
     {
-      target_group_arn = aws_lb_target_group.mastodon-web.arn
-      container_name   = "web"
-      container_port   = 3000
-    },
-
-    {
-      target_group_arn = aws_lb_target_group.mastodon-streaming.arn
-      container_name   = "streaming"
-      container_port   = 4000
+      registry_arn   = aws_service_discovery_service.mastodon-web.arn
+      container_name = "web"
     }
   ]
 
@@ -81,6 +74,7 @@ locals {
     LOCAL_DOMAIN             = "nfra.club"
     RAILS_ENV                = "production"
     CDN_HOST                 = "https://static.nfra.club"
+    TRUSTED_PROXY_IP         = data.consul_keys.mastodon.var.trusted_proxy_ip
     STREAMING_API_BASE_URL   = "wss://streaming.nfra.club"
     RAILS_SERVE_STATIC_FILES = "true"
     PAPERCLIP_ROOT_PATH      = "/var/lib/mastodon/userassets"

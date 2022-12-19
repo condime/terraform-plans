@@ -12,7 +12,7 @@ resource "aws_ecs_service" "this" {
   task_definition = aws_ecs_task_definition.this.arn
   propagate_tags  = "SERVICE"
 
-  health_check_grace_period_seconds = length(var.load_balancers) == 0 ? 0 : 60
+  health_check_grace_period_seconds = length(var.load_balancers) == 0 ? null : 60
 
   dynamic "load_balancer" {
     for_each = var.load_balancers
@@ -21,6 +21,16 @@ resource "aws_ecs_service" "this" {
       target_group_arn = load_balancer.value["target_group_arn"]
       container_name   = load_balancer.value["container_name"]
       container_port   = load_balancer.value["container_port"]
+    }
+  }
+
+  dynamic "service_registries" {
+    for_each = var.service_registries
+
+    content {
+      registry_arn   = service_registries.value["registry_arn"]
+      container_name = service_registries.value["container_name"]
+      container_port = lookup(service_registries.value, "container_port", null)
     }
   }
 

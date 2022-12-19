@@ -6,6 +6,11 @@ variable "load_balancers" {
   default = []
 }
 
+variable "service_registries" {
+  type    = list(any)
+  default = []
+}
+
 variable "subnet_ids" {
   type    = list(string)
   default = []

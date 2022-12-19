@@ -4,6 +4,11 @@ variable "region" {
 
 data "consul_keys" "mastodon" {
   key {
+    name = "trusted_proxy_ip"
+    path = "condime/terraform_state/mastodon/trusted_proxy_ip"
+  }
+
+  key {
     name = "database_url"
     path = "condime/terraform_state/mastodon/database_url"
   }
