@@ -44,6 +44,54 @@ module "mastodon-scheduler" {
   container_definitions = local.sidekiq_scheduler_container_definitions
 }
 
+module "mastodon-ingress" {
+  source         = "../modules/ecs/service"
+  ecs_cluster_id = module.ecs.cluster_id
+
+  name = "mastodon-ingress"
+
+  task_cpu    = "512"
+  task_memory = "2048"
+
+  subnet_ids         = module.private_subnets.subnet_ids
+  security_group_ids = [aws_security_group.default.id]
+
+  execution_role_arn = aws_iam_role.mastodon-execution-role.arn
+  task_role_arn      = aws_iam_role.mastodon-task-role.arn
+
+  container_definitions = local.sidekiq_ingress_container_definitions
+}
+
+module "mastodon-push" {
+  source         = "../modules/ecs/service"
+  ecs_cluster_id = module.ecs.cluster_id
+
+  name = "mastodon-push"
+
+  subnet_ids         = module.private_subnets.subnet_ids
+  security_group_ids = [aws_security_group.default.id]
+
+  execution_role_arn = aws_iam_role.mastodon-execution-role.arn
+  task_role_arn      = aws_iam_role.mastodon-task-role.arn
+
+  container_definitions = local.sidekiq_push_container_definitions
+}
+
+module "mastodon-pull" {
+  source         = "../modules/ecs/service"
+  ecs_cluster_id = module.ecs.cluster_id
+
+  name = "mastodon-pull"
+
+  subnet_ids         = module.private_subnets.subnet_ids
+  security_group_ids = [aws_security_group.default.id]
+
+  execution_role_arn = aws_iam_role.mastodon-execution-role.arn
+  task_role_arn      = aws_iam_role.mastodon-task-role.arn
+
+  container_definitions = local.sidekiq_pull_container_definitions
+}
+
 module "mastodon-sidekiq" {
   source         = "../modules/ecs/service"
   ecs_cluster_id = module.ecs.cluster_id

@@ -32,11 +32,12 @@ locals {
       name = "sidekiq"
       command = [
         "bundle", "exec", "sidekiq",
-        "-q", "default",
-        "-q", "ingress",
+        "-c", "1",
         "-q", "mailers",
-        "-q", "pull",
+        "-q", "default",
         "-q", "push",
+        "-q", "ingress",
+        "-q", "pull",
       ]
     }),
   ]
@@ -44,9 +45,40 @@ locals {
   # Only ever run one of these
   sidekiq_scheduler_container_definitions = [
     merge(local.common_container_definitions, {
+      # The scheduler and a worker to process it's tasks
       name = "sidekiq-scheduler"
       command = [
-        "bundle", "exec", "sidekiq", "-q", "scheduler",
+        "bundle", "exec", "sidekiq",
+        "-c", "1",
+        "-q", "scheduler",
+        "-q", "default",
+      ]
+    }),
+  ]
+
+  sidekiq_ingress_container_definitions = [
+    merge(local.common_container_definitions, {
+      name = "sidekiq-ingress"
+      command = [
+        "bundle", "exec", "sidekiq", "-c", "1", "-q", "ingress",
+      ]
+    }),
+  ]
+
+  sidekiq_push_container_definitions = [
+    merge(local.common_container_definitions, {
+      name = "sidekiq-push"
+      command = [
+        "bundle", "exec", "sidekiq", "-c", "1", "-q", "push",
+      ]
+    }),
+  ]
+
+  sidekiq_pull_container_definitions = [
+    merge(local.common_container_definitions, {
+      name = "sidekiq-pull"
+      command = [
+        "bundle", "exec", "sidekiq", "-c", "1", "-q", "pull",
       ]
     }),
   ]
