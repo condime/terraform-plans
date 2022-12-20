@@ -20,8 +20,8 @@ module "mastodon-web" {
   subnet_ids         = module.private_subnets.subnet_ids
   security_group_ids = [aws_security_group.default.id]
 
-  task_cpu    = "512"
-  task_memory = "2048"
+  task_cpu    = "256"
+  task_memory = "1024"
 
   execution_role_arn = aws_iam_role.mastodon-execution-role.arn
   task_role_arn      = aws_iam_role.mastodon-task-role.arn
