@@ -6,6 +6,11 @@ resource "aws_ecs_cluster" "this" {
       logging = "DEFAULT"
     }
   }
+
+  setting {
+    name  = "containerInsights"
+    value = var.container_insights_enabled ? "enabled" : "disabled"
+  }
 }
 
 resource "aws_ecs_cluster_capacity_providers" "fargate-spot" {

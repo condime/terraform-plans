@@ -1,7 +1,8 @@
 module "ecs" {
   source = "../modules/ecs"
 
-  cluster_name = "default"
+  cluster_name               = "default"
+  container_insights_enabled = true
 }
 
 module "mastodon-web" {
