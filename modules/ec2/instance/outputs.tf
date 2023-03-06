@@ -1,7 +1,7 @@
 output "instance_id" {
-  value = data.aws_instance.this.id
+  value = aws_instance.this.id
 }
 
 output "eni_id" {
-  value = data.aws_instance.this.network_interface_id
+  value = aws_network_interface.this.id
 }

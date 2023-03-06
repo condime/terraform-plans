@@ -52,9 +52,9 @@ module "nat_instance" {
   # Required for NAT to perform it's lies
   source_dest_check = false
 
-  subnet_id            = element(module.public_subnets.subnet_ids, count.index)
-  security_group_ids   = [aws_security_group.default.id]
-  instance_profile_arn = aws_iam_instance_profile.nat.arn
+  subnet_id             = element(module.public_subnets.subnet_ids, count.index)
+  security_group_ids    = [aws_security_group.default.id]
+  instance_profile_name = aws_iam_instance_profile.nat.name
 
   user_data = filebase64("${path.module}/user_data/nat.tpl")
 }

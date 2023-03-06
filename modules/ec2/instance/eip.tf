@@ -7,8 +7,12 @@ resource "aws_eip" "this" {
 }
 
 resource "aws_eip_association" "this" {
-  allocation_id = aws_eip.this.id
-  instance_id   = data.aws_instance.this.id
+  allocation_id        = aws_eip.this.id
+  network_interface_id = aws_network_interface.this.id
+  allow_reassociation  = true
+}
 
-  allow_reassociation = true
+resource "aws_network_interface" "this" {
+  subnet_id         = var.subnet_id
+  source_dest_check = false
 }

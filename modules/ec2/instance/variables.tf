@@ -1,7 +1,7 @@
 variable "name" {}
 
 variable "subnet_id" {}
-variable "instance_profile_arn" {}
+variable "instance_profile_name" {}
 
 variable "security_group_ids" {
   type = list(string)
