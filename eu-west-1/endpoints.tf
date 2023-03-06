@@ -17,8 +17,9 @@ resource "aws_vpc_endpoint" "interface" {
     dns_record_ip_type = "ipv4"
   }
 
-  subnet_ids         = module.private_subnets.subnet_ids
-  security_group_ids = [aws_security_group.default.id]
+  private_dns_enabled = true
+  security_group_ids  = [aws_security_group.default.id]
+  subnet_ids          = module.private_subnets.subnet_ids
 }
 
 locals {
