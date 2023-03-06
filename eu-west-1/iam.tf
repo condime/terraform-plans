@@ -25,6 +25,39 @@ resource "aws_iam_role_policy_attachment" "nat" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+resource "aws_iam_role_policy_attachment" "nat-config-reader" {
+  role       = aws_iam_role.nat.id
+  policy_arn = aws_iam_policy.config-reader.arn
+}
+
+resource "aws_iam_policy" "config-reader" {
+  name   = "ConfigReader"
+  policy = data.aws_iam_policy_document.config-reader.json
+}
+
+data "aws_iam_policy_document" "config-reader" {
+  statement {
+    actions = [
+      "ssm:GetParameter",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "secretsmanager:GetSecretValue",
+    ]
+
+    resources = [
+      "arn:aws:secretsmanager:eu-west-1:055237546114:secret:server.key-HyXG1o",
+      "arn:aws:secretsmanager:eu-west-1:055237546114:secret:server.pem-1oLgLZ",
+    ]
+  }
+}
+
 resource "aws_iam_role" "mastodon-execution-role" {
   name               = "mastodon-execution-role"
   assume_role_policy = data.aws_iam_policy_document.assume-ecs-tasks.json
@@ -44,7 +77,6 @@ resource "aws_iam_role_policy_attachment" "mastodon-task-role" {
   role       = aws_iam_role.mastodon-task-role.id
   policy_arn = aws_iam_policy.mastodon-task-role.arn
 }
-
 
 resource "aws_iam_policy" "mastodon-task-role" {
   name   = "mastodon-task-role"
