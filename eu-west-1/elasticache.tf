@@ -12,10 +12,10 @@ resource "aws_elasticache_replication_group" "mastodon" {
   description = "single-host redis for mastodon"
 
   replication_group_id = "mastodon"
-  parameter_group_name = aws_elasticache_parameter_group.sidekiq-redis7.name
+  parameter_group_name = aws_elasticache_parameter_group.sidekiq-redis6.name
 
   engine         = "redis"
-  engine_version = "7.0"
+  engine_version = "6.2"
   node_type      = "cache.t4g.micro"
 
   num_cache_clusters      = 1
@@ -35,11 +35,18 @@ resource "aws_elasticache_replication_group" "mastodon" {
   security_group_ids = [
     aws_security_group.default.id,
   ]
+
+  log_delivery_configuration {
+    destination_type = "cloudwatch-logs"
+    destination = aws_cloudwatch_log_group.elasticache-mastodon.name
+    log_format = "text" # or "json"
+    log_type = "engine-log" # or "slow-log"???
+  }
 }
 
-resource "aws_elasticache_parameter_group" "sidekiq-redis7" {
-  name   = "sidekiq-redis7"
-  family = "redis7"
+resource "aws_elasticache_parameter_group" "sidekiq-redis6" {
+  name   = "sidekiq-redis6"
+  family = "redis6.x"
 
   description = "Non-clustered parameter group for sidekiq"
 
@@ -54,9 +61,9 @@ resource "aws_elasticache_parameter_group" "sidekiq-redis7" {
   }
 }
 
-resource "aws_elasticache_parameter_group" "cache-redis7" {
-  name   = "cache-redis7"
-  family = "redis7"
+resource "aws_elasticache_parameter_group" "cache-redis6" {
+  name   = "cache-redis6"
+  family = "redis6.x"
 
   description = "Non-clustered parameter group for rails cache"
 
@@ -72,5 +79,6 @@ resource "aws_elasticache_parameter_group" "cache-redis7" {
 }
 
 locals {
-  mastodon_redis_url = "redis://${aws_elasticache_replication_group.mastodon.primary_endpoint_address}:${aws_elasticache_replication_group.mastodon.port}"
+  #mastodon_redis_url = "redis://${aws_elasticache_replication_group.mastodon.primary_endpoint_address}:${aws_elasticache_replication_group.mastodon.port}"
+  mastodon_redis_url = "redis://${aws_elasticache_replication_group.mastodon.primary_endpoint_address}:6379"
 }

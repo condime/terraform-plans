@@ -3,7 +3,8 @@
 locals {
   honeycomb_dataset = "nfraclub"
   cloudwatch_log_groups = [
-    aws_cloudwatch_log_group.ecs-mastodon.name
+    aws_cloudwatch_log_group.ecs-mastodon.name,
+    aws_cloudwatch_log_group.elasticache-mastodon.name,
   ]
 }
 
