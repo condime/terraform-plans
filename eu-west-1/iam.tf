@@ -1,14 +1,3 @@
-resource "aws_iam_instance_profile" "nat" {
-  name = "nat"
-  role = aws_iam_role.nat.name
-}
-
-resource "aws_iam_role" "nat" {
-  name               = "nat"
-  description        = "EC2 Instance Role for NAT"
-  assume_role_policy = data.aws_iam_policy_document.assume-ec2.json
-}
-
 data "aws_iam_policy_document" "assume-ec2" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -17,44 +6,6 @@ data "aws_iam_policy_document" "assume-ec2" {
       type        = "Service"
       identifiers = ["ec2.amazonaws.com"]
     }
-  }
-}
-
-resource "aws_iam_role_policy_attachment" "nat" {
-  role       = aws_iam_role.nat.id
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_role_policy_attachment" "nat-config-reader" {
-  role       = aws_iam_role.nat.id
-  policy_arn = aws_iam_policy.config-reader.arn
-}
-
-resource "aws_iam_policy" "config-reader" {
-  name   = "ConfigReader"
-  policy = data.aws_iam_policy_document.config-reader.json
-}
-
-data "aws_iam_policy_document" "config-reader" {
-  statement {
-    actions = [
-      "ssm:GetParameter",
-    ]
-
-    resources = [
-      "*",
-    ]
-  }
-
-  statement {
-    actions = [
-      "secretsmanager:GetSecretValue",
-    ]
-
-    resources = [
-      "arn:aws:secretsmanager:eu-west-1:055237546114:secret:server.key-HyXG1o",
-      "arn:aws:secretsmanager:eu-west-1:055237546114:secret:server.pem-1oLgLZ",
-    ]
   }
 }
 
