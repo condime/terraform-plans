@@ -19,7 +19,7 @@ resource "aws_instance" "this" {
 resource "aws_launch_template" "this" {
   name = var.name
 
-  image_id = "ami-006c19cfa0e8f4672"
+  image_id = data.aws_ami.al2023.id
   instance_type = "t4g.nano"
 
   user_data = var.user_data
@@ -29,11 +29,17 @@ resource "aws_launch_template" "this" {
   }
 }
 
-data "aws_ami" "al2" {
+# https://aws.amazon.com/blogs/aws/amazon-linux-2023-a-cloud-optimized-linux-distribution-with-long-term-support/
+data "aws_ami" "al2023" {
   owners      = ["amazon"]
   most_recent = true
-  name_regex  = "^amzn2-ami-kernel-"
+  name_regex  = "^al2023-ami-2023.0."
 
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.0.*"]
+  }
+  
   filter {
     name   = "architecture"
     values = ["arm64"]
