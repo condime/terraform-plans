@@ -1,3 +1,3 @@
 #!/bin/bash
 
-amazon-linux-extras install -y redis6
+echo "User Data complete"

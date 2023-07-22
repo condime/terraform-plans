@@ -1,10 +1,10 @@
 #!/bin/bash
 sysctl -w net.ipv4.ip_forward=1
-/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-yum install -y iptables-services jq
-service iptables save
 
-amazon-linux-extras install -y nginx1
+yum install -y iptables-services jq nginx
+
+iptables -t nat -A POSTROUTING -s 10.0.0.0/8 -d 0.0.0.0/0 -j MASQUERADE
+service iptables save
 
 export AWS_DEFAULT_REGION=eu-west-1
 aws secretsmanager get-secret-value \
