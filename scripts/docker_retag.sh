@@ -3,7 +3,7 @@ set -e
 
 IMAGE="ghcr.io/bencord0/mastodon:master"
 TARGET_REPOSITORY="055237546114.dkr.ecr.eu-west-1.amazonaws.com"
-TARGET_IMAGE="${TARGET_REPOSITORY}/mastodon:4.0.2"
+TARGET_IMAGE="${TARGET_REPOSITORY}/mastodon:4.1.5"
 
 aws ecr get-login-password \
     | docker login --username AWS --password-stdin "${TARGET_REPOSITORY}"

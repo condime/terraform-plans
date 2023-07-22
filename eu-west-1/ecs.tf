@@ -109,7 +109,7 @@ module "mastodon-sidekiq" {
 }
 
 locals {
-  container_image_tag = "@sha256:bff3de34a27a239bea07f0d6867c8700b75da55963d2d33361474663f56a3272"
+  container_image_tag = "@sha256:0cfd750a3bb4bfa5d3e02f9ae0ef90d83a65de4f3a0d58b6e2357418a8304090"
 
   environment = {
     # Mastodon (via kt-paperclip) does not know how to use task role credentials

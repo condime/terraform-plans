@@ -31,16 +31,16 @@ resource "aws_elasticache_replication_group" "mastodon" {
   data_tiering_enabled       = false
   snapshot_retention_limit   = 0
 
-  subnet_group_name  = aws_elasticache_subnet_group.mastodon.name
+  subnet_group_name = aws_elasticache_subnet_group.mastodon.name
   security_group_ids = [
     aws_security_group.default.id,
   ]
 
   log_delivery_configuration {
     destination_type = "cloudwatch-logs"
-    destination = aws_cloudwatch_log_group.elasticache-mastodon.name
-    log_format = "text" # or "json"
-    log_type = "engine-log" # or "slow-log"???
+    destination      = aws_cloudwatch_log_group.elasticache-mastodon.name
+    log_format       = "text"       # or "json"
+    log_type         = "engine-log" # or "slow-log"???
   }
 }
 

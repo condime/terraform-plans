@@ -24,7 +24,13 @@ resource "aws_vpc_endpoint" "interface" {
 
 locals {
   interface_endpoints = [
-    "com.amazonaws.eu-west-1.ssm",
-    "com.amazonaws.eu-west-1.ssmmessages",
+    # Used to connect to EC2 instances
+    #"com.amazonaws.eu-west-1.ec2messages",
+    #"com.amazonaws.eu-west-1.ssm",
+    #"com.amazonaws.eu-west-1.ssmmessages",
+
+    # Used to start Fargate Containers
+    #"com.amazonaws.eu-west-1.ecr.api",
+    #"com.amazonaws.eu-west-1.logs",
   ]
 }
