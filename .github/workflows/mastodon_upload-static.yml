@@ -28,10 +28,13 @@ jobs:
 
     - name: Upload Static Assets
       run: |
+        aws sts get-caller-identity
         docker run --rm \
           --env ${{ env.AWS_ROLE_ARN }} \
           --env ${{ env.AWS_WEB_IDENTITY_TOKEN_FILE }} \
           --volume $(dirname ${{ env.AWS_WEB_IDENTITY_TOKEN_FILE }}) \
           ${{ env.IMAGE }} \
-          aws s3 cp --debug --recursive /usr/share/mastodon/public/ s3://nfra-club/
+          aws sts get-caller-identity
+          #cat ${{ env.AWS_WEB_IDENTITY_TOKEN_FILE }}
+          #aws s3 cp --debug --recursive /usr/share/mastodon/public/ s3://nfra-club/
 
