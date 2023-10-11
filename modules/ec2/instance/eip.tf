@@ -14,5 +14,5 @@ resource "aws_eip_association" "this" {
 
 resource "aws_network_interface" "this" {
   subnet_id         = var.subnet_id
-  source_dest_check = false
+  source_dest_check = var.source_dest_check
 }
