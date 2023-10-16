@@ -1,6 +1,8 @@
 module "debug" {
   source = "../modules/ec2/instance"
   name   = "debug"
+
+  # Set to `1` to enable a debug host
   count  = 0
 
   subnet_id             = element(module.private_subnets.subnet_ids, count.index)
