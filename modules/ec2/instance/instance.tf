@@ -14,6 +14,42 @@ resource "aws_instance" "this" {
   tags = {
     "Name" = var.name
   }
+
+  lifecycle {
+    ignore_changes = [user_data]
+  }
+
+  # Other options: explicit defaults
+  hibernation = false
+
+  capacity_reservation_specification {
+    capacity_reservation_preference = "open"
+  }
+
+  credit_specification {
+    cpu_credits = "unlimited"
+  }
+
+  enclave_options {
+    enabled = false
+  }
+
+  maintenance_options {
+    auto_recovery = "default"
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_put_response_hop_limit = 2
+    http_tokens                 = "required"
+    instance_metadata_tags      = "disabled"
+  }
+
+  private_dns_name_options {
+    enable_resource_name_dns_a_record    = false
+    enable_resource_name_dns_aaaa_record = false
+    hostname_type                        = "ip-name"
+  }
 }
 
 resource "aws_launch_template" "this" {
@@ -33,11 +69,11 @@ resource "aws_launch_template" "this" {
 data "aws_ami" "al2023" {
   owners      = ["amazon"]
   most_recent = true
-  name_regex  = "^al2023-ami-2023.0."
+  name_regex  = "^al2023-ami-2023.1."
 
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.0.*"]
+    values = ["al2023-ami-2023.1.*"]
   }
 
   filter {
