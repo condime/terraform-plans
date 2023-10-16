@@ -21,4 +21,6 @@ resource "aws_ecs_task_definition" "this" {
     var.execution_role_arn,
     var.task_role_arn,
   ]
+
+  tags = {}
 }
