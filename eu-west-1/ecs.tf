@@ -101,6 +101,8 @@ module "mastodon-sidekiq" {
 
   name = "mastodon-sidekiq"
 
+  task_memory = "1024"
+
   subnet_ids         = module.private_subnets.subnet_ids
   security_group_ids = [aws_security_group.default.id]
 
@@ -111,7 +113,7 @@ module "mastodon-sidekiq" {
 }
 
 locals {
-  container_image_tag = "@sha256:69606c26ed48975ec50d5162a70c48e40d7b2eecdede17b7dd41fadb92a21add"
+  container_image_tag = "@sha256:d8183e0888e067436b83237eb8890f17bb9c2305393ba57a43f9f187aaf78220"
 
   environment = {
     # Mastodon (via kt-paperclip) does not know how to use task role credentials
