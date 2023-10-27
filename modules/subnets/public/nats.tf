@@ -1,6 +1,6 @@
 resource "aws_eip" "nat" {
-  count = local.nat_count
-  vpc   = true
+  count  = local.nat_count
+  domain = "vpc"
 
   lifecycle {
     create_before_destroy = true
