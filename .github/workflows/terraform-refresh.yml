@@ -28,7 +28,7 @@ jobs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1.7.0
       with:
-        role-to-assume: "arn:aws:iam::055237545114:role/terraform-plans-ro"
+        role-to-assume: "arn:aws:iam::055237546114:role/terraform-plans-ro"
         aws-region: ${{ matrix.region }}
 
     # Refresh terraform state
