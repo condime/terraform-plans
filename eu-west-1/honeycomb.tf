@@ -26,17 +26,6 @@ resource "aws_kinesis_firehose_delivery_stream" "honeycomb" {
   name        = "honeycomb-logs"
   destination = "http_endpoint"
 
-  s3_configuration {
-    role_arn   = aws_iam_role.honeycomb-firehose.arn
-    bucket_arn = aws_s3_bucket.honeycomb-s3.arn
-
-    # https://docs.aws.amazon.com/firehose/latest/dev/create-configure.html
-    # https://github.com/honeycombio/terraform-aws-integrations/blob/main/modules/kinesis-firehose-honeycomb/variables.tf
-    buffer_size        = 10
-    buffer_interval    = 400
-    compression_format = "GZIP"
-  }
-
   http_endpoint_configuration {
     url                = "https://api.honeycomb.io/1/kinesis_events/${local.honeycomb_dataset}"
     name               = "honeycomb"
@@ -49,5 +38,18 @@ resource "aws_kinesis_firehose_delivery_stream" "honeycomb" {
     request_configuration {
       content_encoding = "GZIP"
     }
+
+    s3_configuration {
+      role_arn   = aws_iam_role.honeycomb-firehose.arn
+      bucket_arn = aws_s3_bucket.honeycomb-s3.arn
+
+      # https://docs.aws.amazon.com/firehose/latest/dev/create-configure.html
+      # https://github.com/honeycombio/terraform-aws-integrations/blob/main/modules/kinesis-firehose-honeycomb/variables.tf
+      buffer_size        = 10
+      buffer_interval    = 400
+      compression_format = "GZIP"
+    }
+
+
   }
 }
