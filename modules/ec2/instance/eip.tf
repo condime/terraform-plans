@@ -1,5 +1,5 @@
 resource "aws_eip" "this" {
-  vpc = true
+  domain = "vpc"
 
   lifecycle {
     create_before_destroy = true
