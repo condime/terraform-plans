@@ -13,6 +13,10 @@ jobs:
     environment: production
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        region: ["eu-west-1", "eu-west-2", "us-east-1"]
+
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
@@ -28,5 +32,6 @@ jobs:
 
     # Refresh terraform state
     - name: Terraform Refresh
-      run: |
-        terraform refresh
+      run: ./scripts/terraform_refresh.sh
+      env:
+        AWS_DEFAULT_REGION: ${{ matrix.region }}
