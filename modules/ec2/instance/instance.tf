@@ -55,7 +55,7 @@ resource "aws_instance" "this" {
 resource "aws_launch_template" "this" {
   name = var.name
 
-  image_id = data.aws_ami.al2023.id
+  image_id      = data.aws_ami.al2023.id
   instance_type = "t4g.nano"
 
   user_data = var.user_data

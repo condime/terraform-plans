@@ -3,7 +3,7 @@ module "debug" {
   name   = "debug"
 
   # Set to `1` to enable a debug host
-  count  = 0
+  count = 0
 
   subnet_id             = element(module.private_subnets.subnet_ids, count.index)
   security_group_ids    = [aws_security_group.default.id]
