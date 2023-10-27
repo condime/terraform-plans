@@ -45,8 +45,8 @@ resource "aws_kinesis_firehose_delivery_stream" "honeycomb" {
 
       # https://docs.aws.amazon.com/firehose/latest/dev/create-configure.html
       # https://github.com/honeycombio/terraform-aws-integrations/blob/main/modules/kinesis-firehose-honeycomb/variables.tf
-      buffer_size        = 10
-      buffer_interval    = 400
+      buffering_size     = 10
+      buffering_interval = 400
       compression_format = "GZIP"
     }
 
