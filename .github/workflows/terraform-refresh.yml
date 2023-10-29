@@ -9,6 +9,7 @@ env:
 
 permissions:
   id-token: write
+  contents: read
 
 jobs:
   terraform-refresh:
@@ -18,7 +19,8 @@ jobs:
 
     strategy:
       matrix:
-        region: ["eu-west-1", "eu-west-2", "us-east-1"]
+        region: ["eu-west-1"]
+        # region: ["eu-west-1", "eu-west-2", "us-east-1"]
 
     steps:
     # Checkout the repository to the GitHub Actions runner
