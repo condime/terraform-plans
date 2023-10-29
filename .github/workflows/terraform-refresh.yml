@@ -14,7 +14,6 @@ permissions:
 jobs:
   terraform-refresh:
     name: 'Terraform Refresh'
-    environment: production
     runs-on: ubuntu-latest
 
     strategy:
