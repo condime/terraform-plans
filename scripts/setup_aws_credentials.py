@@ -4,7 +4,7 @@ import argparse
 import json
 import os
 import uuid
-from base64 import b64decode as decode
+from base64 import b64decode as decode, b64encode as encode
 from pathlib import Path
 from pip._vendor import requests
 from pprint import pprint
@@ -50,7 +50,7 @@ def write_tempfile(content: str) -> Path:
         print("Writing webidentity file")
         print(f"Directory: {temp}")
         print(f"File: {path}")
-        print(content)
+        print(encode(content.encode()).decode())
 
     return path
 
