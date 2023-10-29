@@ -62,7 +62,7 @@ def append_env(key, value):
 
 
 def debug_token(token: str):
-    if !SCRIPT_DEBUG:
+    if not SCRIPT_DEBUG:
         return
 
     # Do not rely on the content, we are not checking the signature
