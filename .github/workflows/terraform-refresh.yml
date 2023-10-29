@@ -28,15 +28,9 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-session-name: terraform-refresh
-        role-to-assume: "arn:aws:iam::055237546114:role/terraform-plans-ro"
-        aws-region: ${{ matrix.region }}
-        unset-current-credentials: true
-        disable-retry: true
-      env:
-        SHOW_STACK_TRACE: "true"
+      run: |
+        ./scripts/setup_aws_credentials.py \
+          --role "arn:aws:iam::055237546114:role/terraform-plans-ro"
 
     # Refresh terraform state
     - name: Terraform Refresh

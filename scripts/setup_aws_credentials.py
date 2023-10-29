@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--role', required=True)
 
 github_env = Path(os.environ['GITHUB_ENV'])
-
+SCRIPT_DEBUG = True
 
 def fetch_token() -> str:
     url = os.getenv('ACTIONS_ID_TOKEN_REQUEST_URL')
@@ -22,11 +22,20 @@ def fetch_token() -> str:
     assert url, 'GitHub Actions Token URL not set'
     assert token, 'GitHub Actions Access Token not set'
 
+    if SCRIPT_DEBUG:
+        print(f"ACTIONS_ID_TOKEN_REQUEST_URL: {url}")
+        print(f"ACTIONS_ID_TOKEN_REQUEST_TOKEN: {token[:4]}...")
+
     response = requests.get(url, headers={
         'Authorization': f'Bearer {token}',
     })
 
-    return response.json()['value']
+    payload = response.json()
+
+    if SCRIPT_DEBUG:
+        pprint(payload)
+
+    return payload['value']
 
 
 def write_tempfile(content: str) -> Path:
@@ -36,6 +45,13 @@ def write_tempfile(content: str) -> Path:
     temp.mkdir()
     with path.open('w') as f:
         f.write(content)
+
+    if SCRIPT_DEBUG:
+        print("Writing webidentity file")
+        print(f"Directory: {temp}")
+        print(f"File: {path}")
+        print(content)
+
     return path
 
 
@@ -46,6 +62,9 @@ def append_env(key, value):
 
 
 def debug_token(token: str):
+    if !SCRIPT_DEBUG:
+        return
+
     # Do not rely on the content, we are not checking the signature
     header, content, signature = token.split('.')
 
