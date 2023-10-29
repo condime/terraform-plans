@@ -31,6 +31,10 @@ jobs:
         role-session-name: terraform-refresh
         role-to-assume: "arn:aws:iam::055237546114:role/terraform-plans-ro"
         aws-region: ${{ matrix.region }}
+        unset-current-credentials: true
+        disable-retry: true
+      env:
+        SHOW_STACK_TRACE: "true"
 
     # Refresh terraform state
     - name: Terraform Refresh
