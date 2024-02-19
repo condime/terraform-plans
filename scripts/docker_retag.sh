@@ -5,7 +5,7 @@ cd "$(dirname $(dirname "$(readlink -f "${BASH_ARGV0}")"))"
 
 IMAGE="ghcr.io/bencord0/mastodon:master"
 TARGET_REPOSITORY="055237546114.dkr.ecr.eu-west-1.amazonaws.com"
-TARGET_IMAGE="${TARGET_REPOSITORY}/mastodon:4.2.3"
+TARGET_IMAGE="${TARGET_REPOSITORY}/mastodon:4.2.7"
 
 aws ecr get-login-password \
     | docker login --username AWS --password-stdin "${TARGET_REPOSITORY}"
