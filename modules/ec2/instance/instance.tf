@@ -69,11 +69,11 @@ resource "aws_launch_template" "this" {
 data "aws_ami" "al2023" {
   owners      = ["amazon"]
   most_recent = true
-  name_regex  = "^al2023-ami-2023.2."
+  name_regex  = "^al2023-ami-2023.3."
 
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.2.*"]
+    values = ["al2023-ami-2023.3.*"]
   }
 
   filter {
