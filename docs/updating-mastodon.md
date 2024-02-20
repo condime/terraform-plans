@@ -15,35 +15,47 @@ you need to take to get nfra.club updated.
 
 - Bump the version of the ebuild
 
+```sh
 $ git mv www-apps/mastodon/mastodon-{$OLD_PV,$NEW_PV}.ebuild
+```
 
 If necessary add a revision suffix, e.g. `-r1`. This helps force other installations
 to adopt the new changes, recompiling or binpkgs as necessary.
 
 - Update the Manifest
 
+```sh
 $ ebuild www-apps/mastodon/mastodon-$NEW_PV.ebuild digest
+```
 
 - Push the changes
 
+```sh
 $ git add www-apps/mastodon
 $ git commit -m "www-apps/mastodon: Bump to $NEW_PV"
 $ git push
+```
 
 ## 3. Build a binpkg
 
 - Update the overlay on aniseed
 
+```sh
 $ ssh aniseed
 (aniseed) $ sudo emaint sync -r bencord0
+```
 
 - Log into the build-container
 
+```sh
 (aniseed) $ sudo machinectl shell build-mastodon
+```
 
 - Trigger a full build
 
+```sh
 (build-mastodon) # emerge -1av @profile
+```
 
 ## 4. Build a docker image
 
@@ -57,10 +69,13 @@ $ ssh aniseed
 
 - Install in the exact same version of the package, this ensures that asset
   checksums are correct.
-$ sudo emerge -1av --nodeps --getbinpkgonly --binpkg-changed-deps=n www-apps/mastodon
 
+```sh
+$ sudo emerge -1av --nodeps --getbinpkgonly --binpkg-changed-deps=n www-apps/mastodon
+```
 - Login to AWS
 
+```sh
 $ cat << EOF >> ~/.aws/config
 [profile condi.me_eu-west-1_admin]
 sso_start_url = https://d-9c67240387.awsapps.com/start
@@ -72,11 +87,15 @@ EOF
 
 $ export AWS_PROFILE=condime_eu-west-1_admin
 $ aws sso login
+```
 
 This will open your browser, and prompt you for login and 2FA.
 
 - Sync assets with S3
+
+```sh
 $ ./scripts/sync-mastodon-s3-assets.sh
+```
 
 ## 6. Deploy the new containers
 
@@ -84,19 +103,25 @@ Wait until step 4 has completed, and a new docker image is available on ghcr.
 
 - Login to terraform
 
+```sh
 $ . <(pass condi.me/terraform-plans)
+```
 
 You will also need to be logged in to AWS (or can reuse the same shell).
 
 - Tag docker images for ECR
 
+```sh
 $ ./scripts/docker_retag.sh
+```
 
 - Push the new task definitions to the cluster
 
+```sh
 $ cd eu-west-1
 $ terraform plan
 $ terraform apply
+```
 
 ## 7. Check the deploy
 
