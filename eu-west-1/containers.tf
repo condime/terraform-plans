@@ -38,6 +38,8 @@ locals {
         "-q", "push",
         "-q", "ingress",
         "-q", "pull",
+        "-q", "crawler",
+        "-q", "threadresolver",
       ]
     }),
   ]
