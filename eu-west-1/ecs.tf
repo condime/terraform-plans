@@ -84,7 +84,7 @@ module "mastodon-pull" {
 
   name = "mastodon-pull"
 
-  task_memory = "1024"
+  task_memory = "2048"
 
   subnet_ids         = module.private_subnets.subnet_ids
   security_group_ids = [aws_security_group.default.id]
@@ -113,7 +113,7 @@ module "mastodon-sidekiq" {
 }
 
 locals {
-  container_image_tag = "@sha256:6e464fff2599748ae00fedd7a860eaa6cdc79dac5ebb5787a87e622f7c360779"
+  container_image_tag = "@sha256:fd3f593e4f54893fe64440cbec47bdb7b536804b8415166601c4f36b6043ba86"
 
   environment = {
     # Mastodon (via kt-paperclip) does not know how to use task role credentials

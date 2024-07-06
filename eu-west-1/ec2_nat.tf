@@ -1,6 +1,9 @@
 # Cheap mode: NAT Instances are EC2 instances with some IP checks disabled
 # Linux iptables performs POSTROUTING S-NAT if your bill is dominated by NAT GW hours
 # https://docs.aws.amazon.com/vpc/latest/userguide/VPC_NAT_Instance.html
+
+# Note: If this resource changes, you must also update the TRUSTED_PROXY_IP variable
+# https://consul.condi.me/ui/dc1/kv/condime/terraform_state/mastodon/trusted_proxy_ip/edit
 module "nat_instance" {
   source = "../modules/ec2/instance"
   name   = "nat"

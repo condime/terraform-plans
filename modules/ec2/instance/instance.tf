@@ -65,15 +65,19 @@ resource "aws_launch_template" "this" {
   }
 }
 
+locals {
+  al2_name_prefix = "al2023-ami-2023.4."
+}
+
 # https://aws.amazon.com/blogs/aws/amazon-linux-2023-a-cloud-optimized-linux-distribution-with-long-term-support/
 data "aws_ami" "al2023" {
   owners      = ["amazon"]
   most_recent = true
-  name_regex  = "^al2023-ami-2023.3."
+  name_regex  = "^${local.al2_name_prefix}"
 
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.3.*"]
+    values = ["${local.al2_name_prefix}*"]
   }
 
   filter {
