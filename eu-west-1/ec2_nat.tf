@@ -45,6 +45,17 @@ resource "aws_iam_policy" "config-reader" {
   policy = data.aws_iam_policy_document.config-reader.json
 }
 
+# Cloudflare Origin secrets
+# Download server.key and server.pem from the cloudflare dashboard
+# https://dash.cloudflare.com/150b67ab2957ed2c7daab47f3140e529/nfra.club/ssl-tls/origin
+#
+# $ aws secretsmanager put-secret-value \
+#    --secret-id arn:aws:secretsmanager:eu-west-1:055237546114:secret:server.key-HyXG1o \
+#    --secret-string file://server.key
+#
+# $ aws secretsmanager put-secret-value \
+#    --secret-id arn:aws:secretsmanager:eu-west-1:055237546114:secret:server.pem-1oLgLZ \
+#    --secret-string file://server.pem
 data "aws_iam_policy_document" "config-reader" {
   statement {
     actions = [
