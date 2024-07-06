@@ -4,16 +4,29 @@ import argparse
 import json
 import os
 import uuid
-from base64 import b64decode as decode, b64encode as encode
+from base64 import b64decode as decode
 from pathlib import Path
 from pip._vendor import requests
 from pprint import pprint
+from urllib.parse import urlparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--role', required=True)
 
 github_env = Path(os.environ['GITHUB_ENV'])
-SCRIPT_DEBUG = True
+SCRIPT_DEBUG = False
+
+
+def main():
+    args = parser.parse_args()
+
+    token = fetch_token()
+    path = write_tempfile(token)
+    debug_token(token)
+
+    append_env('AWS_ROLE_ARN', args.role)
+    append_env('AWS_WEB_IDENTITY_TOKEN_FILE', path)
+
 
 def fetch_token() -> str:
     url = os.getenv('ACTIONS_ID_TOKEN_REQUEST_URL')
@@ -22,9 +35,8 @@ def fetch_token() -> str:
     assert url, 'GitHub Actions Token URL not set'
     assert token, 'GitHub Actions Access Token not set'
 
-    if SCRIPT_DEBUG:
-        print(f"ACTIONS_ID_TOKEN_REQUEST_URL: {url}")
-        print(f"ACTIONS_ID_TOKEN_REQUEST_TOKEN: {token[:4]}...")
+    domain = urlparse(url)
+    print(f"Requesting OIDC Token from {domain}")
 
     response = requests.get(url, headers={
         'Authorization': f'Bearer {token}',
@@ -50,7 +62,6 @@ def write_tempfile(content: str) -> Path:
         print("Writing webidentity file")
         print(f"Directory: {temp}")
         print(f"File: {path}")
-        print(encode(content.encode()).decode())
 
     return path
 
@@ -62,9 +73,6 @@ def append_env(key, value):
 
 
 def debug_token(token: str):
-    if not SCRIPT_DEBUG:
-        return
-
     # Do not rely on the content, we are not checking the signature
     header, content, signature = token.split('.')
 
@@ -76,18 +84,11 @@ def debug_token(token: str):
         except ValueError:
             continue
 
-    pprint(json.loads(payload))
+    if SCRIPT_DEBUG:
+        pprint(json.loads(payload))
 
-
-def main():
-    args = parser.parse_args()
-
-    token = fetch_token()
-    path = write_tempfile(token)
-    debug_token(token)
-
-    append_env('AWS_ROLE_ARN', args.role)
-    append_env('AWS_WEB_IDENTITY_TOKEN_FILE', path)
+    print(f"token.actions.githubusercontent.com:aud = {payload['aud']}")
+    print(f"token.actions.githubusercontent.com:sub = {payload['sub']}")
 
 
 if __name__ == '__main__':
