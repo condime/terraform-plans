@@ -56,6 +56,14 @@ resource "aws_iam_policy" "config-reader" {
 # $ aws secretsmanager put-secret-value \
 #    --secret-id arn:aws:secretsmanager:eu-west-1:055237546114:secret:server.pem-1oLgLZ \
 #    --secret-string file://server.pem
+#
+# Nginx config
+# Not a secret, stored in SSM Parameter Store
+#
+# $ aws ssm put-parameter \
+#    --name nginx.conf \
+#    --overwrite \
+#    --value file://templates/nginx.conf
 data "aws_iam_policy_document" "config-reader" {
   statement {
     actions = [
